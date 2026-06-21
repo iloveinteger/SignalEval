@@ -1,0 +1,11 @@
+ticker,name,sector,industry,active
+AAPL,Apple Inc.,Information Technology,Technology Hardware Storage & Peripherals,1
+MSFT,Microsoft Corp.,Information Technology,Systems Software,1
+NVDA,NVIDIA Corp.,Information Technology,Semiconductors,1
+AMZN,Amazon.com Inc.,Consumer Discretionary,Broadline Retail,1
+GOOGL,Alphabet Inc. Class A,Communication Services,Interactive Media & Services,1
+META,Meta Platforms Inc.,Communication Services,Interactive Media & Services,1
+TSLA,Tesla Inc.,Consumer Discretionary,Automobile Manufacturers,1
+JPM,JPMorgan Chase & Co.,Financials,Diversified Banks,1
+XOM,Exxon Mobil Corp.,Energy,Integrated Oil & Gas,1
+UNH,UnitedHealth Group Inc.,Health Care,Managed Health Care,1
