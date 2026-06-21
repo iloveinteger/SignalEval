@@ -151,6 +151,15 @@ def upsert_price(conn: sqlite3.Connection, price: Mapping[str, Any]) -> None:
     )
 
 
+def upsert_prices(conn: sqlite3.Connection, prices: Iterable[Mapping[str, Any]]) -> int:
+    count = 0
+    with conn:
+        for price in prices:
+            upsert_price(conn, price)
+            count += 1
+    return count
+
+
 def upsert_signal(conn: sqlite3.Connection, signal: Mapping[str, Any]) -> None:
     collected_at = signal.get("collected_at") or utc_now_iso()
 
@@ -192,6 +201,42 @@ def upsert_signal(conn: sqlite3.Connection, signal: Mapping[str, Any]) -> None:
             collected_at,
             int(signal.get("success", 1)),
             _optional_text(signal.get("error_message")),
+        ),
+    )
+
+
+def upsert_forward_return(
+    conn: sqlite3.Connection, forward_return: Mapping[str, Any]
+) -> None:
+    computed_at = forward_return.get("computed_at") or utc_now_iso()
+
+    conn.execute(
+        """
+        INSERT INTO forward_returns (
+          signal_id,
+          horizon,
+          raw_return,
+          spy_return,
+          spy_alpha,
+          sector_alpha,
+          computed_at
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+        ON CONFLICT(signal_id, horizon) DO UPDATE SET
+          raw_return = excluded.raw_return,
+          spy_return = excluded.spy_return,
+          spy_alpha = excluded.spy_alpha,
+          sector_alpha = excluded.sector_alpha,
+          computed_at = excluded.computed_at
+        """,
+        (
+            int(forward_return["signal_id"]),
+            int(forward_return["horizon"]),
+            forward_return.get("raw_return"),
+            forward_return.get("spy_return"),
+            forward_return.get("spy_alpha"),
+            forward_return.get("sector_alpha"),
+            computed_at,
         ),
     )
 
