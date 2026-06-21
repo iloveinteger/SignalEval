@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any
 
 from src.analysis.leaderboard import export_leaderboard_json
+from src.analysis.returns import HORIZONS
 from src.utils.db import DEFAULT_DB_PATH, PROJECT_ROOT, connect, create_schema, utc_now_iso
 
 DEFAULT_DOCS_DIR = PROJECT_ROOT / "docs"
@@ -35,6 +36,7 @@ def build_static_site(
             exports_path / "leaderboard.json",
         )
         data_quality = build_data_quality(conn)
+        stocks = build_stock_data(conn)
 
     (exports_path / "data_quality.json").write_text(
         json.dumps(data_quality, indent=2) + "\n",
@@ -44,6 +46,7 @@ def build_static_site(
     pages = {
         "index": docs_path / "index.html",
         "leaderboard": docs_path / "leaderboard.html",
+        "stocks": docs_path / "stocks.html",
         "data_quality": docs_path / "data-quality.html",
     }
 
@@ -52,12 +55,47 @@ def build_static_site(
         render_leaderboard_page(leaderboard),
         encoding="utf-8",
     )
+    pages["stocks"].write_text(render_stocks_index_page(stocks), encoding="utf-8")
+    pages.update(write_stock_detail_pages(docs_path, stocks))
     pages["data_quality"].write_text(
         render_data_quality_page(data_quality),
         encoding="utf-8",
     )
 
     return pages
+
+
+def build_stock_data(conn: sqlite3.Connection) -> list[dict[str, Any]]:
+    stock_rows = conn.execute(
+        """
+        SELECT
+          stocks.ticker,
+          stocks.name,
+          stocks.sector,
+          stocks.industry,
+          stocks.active,
+          MAX(signals.date) AS latest_signal_date,
+          COUNT(signals.id) AS signal_count
+        FROM stocks
+        LEFT JOIN signals
+          ON signals.ticker = stocks.ticker
+         AND signals.success = 1
+        GROUP BY
+          stocks.ticker,
+          stocks.name,
+          stocks.sector,
+          stocks.industry,
+          stocks.active
+        ORDER BY stocks.ticker
+        """
+    ).fetchall()
+
+    stocks = []
+    for row in stock_rows:
+        stock = dict(row)
+        stock["signals"] = _load_latest_stock_signals(conn, row["ticker"])
+        stocks.append(stock)
+    return stocks
 
 
 def build_data_quality(conn: sqlite3.Connection) -> dict[str, Any]:
@@ -162,9 +200,13 @@ def render_home_page(leaderboard: dict[str, Any]) -> str:
 
     if top_rows:
         body.append(_leaderboard_table(top_rows, compact=True))
-        body.append('<p><a class="button" href="leaderboard.html">View full leaderboard</a></p>')
+        body.append(
+            '<p><a class="button" href="leaderboard.html">View full leaderboard</a> '
+            '<a class="button" href="stocks.html">Browse stocks</a></p>'
+        )
     else:
         body.append(_empty_state("No evaluated signals are available yet."))
+        body.append('<p><a class="button" href="stocks.html">Browse tracked stocks</a></p>')
 
     body.append("</section>")
     return _page("Signal League", "\n".join(body), active="home")
@@ -176,6 +218,7 @@ def render_leaderboard_page(leaderboard: dict[str, Any]) -> str:
         "<section>",
         "<h1>Leaderboard</h1>",
         "<p>Default view is organized around 20D and 60D forward performance when those horizons are available.</p>",
+        '<p><a class="button" href="stocks.html">Browse stock-level results</a></p>',
     ]
 
     if top_rows:
@@ -185,6 +228,75 @@ def render_leaderboard_page(leaderboard: dict[str, Any]) -> str:
 
     body.extend(["</section>", _raw_metric_table(leaderboard.get("rows", []))])
     return _page("Leaderboard - Signal League", "\n".join(body), active="leaderboard")
+
+
+def render_stocks_index_page(stocks: list[dict[str, Any]]) -> str:
+    body = [
+        "<section>",
+        "<h1>Stocks</h1>",
+        "<p>Tracked tickers in the current Signal League universe.</p>",
+    ]
+
+    if stocks:
+        body.append(_stocks_index_table(stocks))
+    else:
+        body.append(_empty_state("No tracked stocks are available yet."))
+
+    body.append("</section>")
+    return _page("Stocks - Signal League", "\n".join(body), active="stocks")
+
+
+def render_stock_detail_page(stock: dict[str, Any]) -> str:
+    ticker = stock["ticker"]
+    body = [
+        '<section><p><a class="button" href="../stocks.html">All stocks</a></p>',
+        f"<h1>{_escape(ticker)}</h1>",
+        f'<p class="lede">{_escape(stock.get("name") or "Unknown company")}</p>',
+        _metric_grid(
+            [
+                ("Company", stock.get("name")),
+                ("Sector", stock.get("sector")),
+                ("Industry", stock.get("industry")),
+                ("Active", "Yes" if int(stock.get("active") or 0) else "No"),
+            ]
+        ),
+        "</section>",
+        "<section><h2>Latest Signals</h2>",
+    ]
+
+    signals = stock.get("signals", [])
+    if signals:
+        body.append(_stock_signals_table(signals))
+    else:
+        body.append(_empty_state("No successful signals are stored for this ticker yet."))
+
+    body.append("</section>")
+    return _page(
+        f"{ticker} - Signal League",
+        "\n".join(body),
+        active="stocks",
+        path_prefix="../",
+    )
+
+
+def write_stock_detail_pages(
+    docs_path: Path,
+    stocks: list[dict[str, Any]],
+) -> dict[str, Path]:
+    stocks_dir = docs_path / "stocks"
+    stocks_dir.mkdir(parents=True, exist_ok=True)
+
+    for existing_page in stocks_dir.glob("*.html"):
+        existing_page.unlink()
+
+    pages: dict[str, Path] = {}
+    for stock in stocks:
+        ticker = str(stock["ticker"]).upper()
+        page_path = stocks_dir / f"{ticker}.html"
+        page_path.write_text(render_stock_detail_page(stock), encoding="utf-8")
+        pages[f"stock_{ticker}"] = page_path
+
+    return pages
 
 
 def render_data_quality_page(data_quality: dict[str, Any]) -> str:
@@ -221,14 +333,15 @@ def render_data_quality_page(data_quality: dict[str, Any]) -> str:
     return _page("Data Quality - Signal League", "\n".join(body), active="quality")
 
 
-def _page(title: str, body: str, *, active: str) -> str:
+def _page(title: str, body: str, *, active: str, path_prefix: str = "") -> str:
     nav = [
         ("home", "Home", "index.html"),
         ("leaderboard", "Leaderboard", "leaderboard.html"),
+        ("stocks", "Stocks", "stocks.html"),
         ("quality", "Data Quality", "data-quality.html"),
     ]
     nav_links = "\n".join(
-        f'<a class="{"active" if key == active else ""}" href="{href}">{label}</a>'
+        f'<a class="{"active" if key == active else ""}" href="{path_prefix}{href}">{label}</a>'
         for key, label, href in nav
     )
 
@@ -404,6 +517,13 @@ def _page(title: str, body: str, *, active: str) -> str:
     .num {{ text-align: right; font-variant-numeric: tabular-nums; }}
     .positive {{ color: var(--positive); }}
     .negative {{ color: var(--negative); }}
+    .status {{
+      font-weight: 700;
+      text-transform: capitalize;
+    }}
+    .status.pending, .status.neutral {{ color: var(--muted); }}
+    .status.correct {{ color: var(--positive); }}
+    .status.incorrect {{ color: var(--negative); }}
     .empty {{
       border: 1px dashed var(--line);
       border-radius: 8px;
@@ -506,6 +626,87 @@ def _leaderboard_table(rows: list[dict[str, Any]], *, compact: bool) -> str:
             <th class="num">60D Sector Alpha</th>
             <th class="num">Hit Rate</th>
             <th class="num">Sample</th>
+          </tr>
+        </thead>
+        <tbody>{''.join(cells)}</tbody>
+      </table>
+    </div>
+    """
+
+
+def _stocks_index_table(stocks: list[dict[str, Any]]) -> str:
+    cells = []
+    for stock in stocks:
+        ticker = str(stock["ticker"]).upper()
+        cells.append(
+            "<tr>"
+            f'<td><a href="stocks/{_escape(ticker)}.html">{_escape(ticker)}</a></td>'
+            f"<td>{_display(stock.get('name'))}</td>"
+            f"<td>{_display(stock.get('sector'))}</td>"
+            f"<td>{_display(stock.get('industry'))}</td>"
+            f"<td>{'Active' if int(stock.get('active') or 0) else 'Inactive'}</td>"
+            f"<td>{_display(stock.get('latest_signal_date'))}</td>"
+            f"<td class=\"num\">{_display(stock.get('signal_count'))}</td>"
+            "</tr>"
+        )
+
+    return f"""
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Ticker</th>
+            <th>Company</th>
+            <th>Sector</th>
+            <th>Industry</th>
+            <th>Status</th>
+            <th>Latest Signal</th>
+            <th class="num">Signals</th>
+          </tr>
+        </thead>
+        <tbody>{''.join(cells)}</tbody>
+      </table>
+    </div>
+    """
+
+
+def _stock_signals_table(signals: list[dict[str, Any]]) -> str:
+    cells = []
+    for signal in signals:
+        for horizon_result in signal["horizon_results"]:
+            status = horizon_result["status"]
+            cells.append(
+                "<tr>"
+                f"<td>{_display(signal.get('date'))}</td>"
+                f"<td>{_display(signal.get('source'))}</td>"
+                f"<td>{_display(signal.get('raw_signal'))}</td>"
+                f"<td>{_display(signal.get('normalized_signal'))}</td>"
+                f"<td class=\"num\">{_display(signal.get('score'))}</td>"
+                f"<td class=\"num\">{_money(signal.get('price_at_signal'))}</td>"
+                f"<td class=\"num\">{horizon_result['horizon']}D</td>"
+                f"<td class=\"num {_value_class(horizon_result.get('raw_return'))}\">{_percent(horizon_result.get('raw_return'))}</td>"
+                f"<td class=\"num {_value_class(horizon_result.get('spy_alpha'))}\">{_percent(horizon_result.get('spy_alpha'))}</td>"
+                f"<td class=\"num {_value_class(horizon_result.get('sector_alpha'))}\">{_percent(horizon_result.get('sector_alpha'))}</td>"
+                f'<td><span class="status {status}">{_escape(status)}</span></td>'
+                "</tr>"
+            )
+
+    return f"""
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Source</th>
+            <th>Raw Signal</th>
+            <th>Normalized</th>
+            <th class="num">Score</th>
+            <th class="num">Price</th>
+            <th class="num">Horizon</th>
+            <th class="num">Return</th>
+            <th class="num">SPY Alpha</th>
+            <th class="num">Sector Alpha</th>
+            <th>Status</th>
           </tr>
         </thead>
         <tbody>{''.join(cells)}</tbody>
@@ -647,6 +848,12 @@ def _number(value: Any) -> str:
     return f"{float(value):.3f}"
 
 
+def _money(value: Any) -> str:
+    if value is None:
+        return "&mdash;"
+    return f"{float(value):.2f}"
+
+
 def _value_class(value: Any) -> str:
     if value is None:
         return ""
@@ -660,6 +867,88 @@ def _value_class(value: Any) -> str:
 
 def _escape(value: Any) -> str:
     return html.escape(str(value), quote=True)
+
+
+def result_status(score: int | None, raw_return: float | None) -> str:
+    if raw_return is None:
+        return "pending"
+    if score is None or int(score) == 0 or float(raw_return) == 0:
+        return "neutral"
+
+    numeric_score = int(score)
+    numeric_return = float(raw_return)
+    if (numeric_score > 0 and numeric_return > 0) or (
+        numeric_score < 0 and numeric_return < 0
+    ):
+        return "correct"
+    return "incorrect"
+
+
+def _load_latest_stock_signals(
+    conn: sqlite3.Connection,
+    ticker: str,
+) -> list[dict[str, Any]]:
+    signal_rows = conn.execute(
+        """
+        SELECT signals.*
+        FROM signals
+        JOIN (
+          SELECT source, MAX(date) AS latest_date
+          FROM signals
+          WHERE ticker = ?
+            AND success = 1
+          GROUP BY source
+        ) latest
+          ON latest.source = signals.source
+         AND latest.latest_date = signals.date
+        WHERE signals.ticker = ?
+          AND signals.success = 1
+        ORDER BY signals.source
+        """,
+        (ticker.upper(), ticker.upper()),
+    ).fetchall()
+
+    signals = []
+    for row in signal_rows:
+        signal = dict(row)
+        returns_by_horizon = _load_forward_returns_by_horizon(conn, int(row["id"]))
+        signal["horizon_results"] = [
+            _horizon_result(signal.get("score"), returns_by_horizon.get(horizon), horizon)
+            for horizon in HORIZONS
+        ]
+        signals.append(signal)
+    return signals
+
+
+def _load_forward_returns_by_horizon(
+    conn: sqlite3.Connection,
+    signal_id: int,
+) -> dict[int, dict[str, Any]]:
+    rows = conn.execute(
+        """
+        SELECT horizon, raw_return, spy_alpha, sector_alpha
+        FROM forward_returns
+        WHERE signal_id = ?
+        ORDER BY horizon
+        """,
+        (signal_id,),
+    ).fetchall()
+    return {int(row["horizon"]): dict(row) for row in rows}
+
+
+def _horizon_result(
+    score: int | None,
+    row: dict[str, Any] | None,
+    horizon: int,
+) -> dict[str, Any]:
+    raw_return = row.get("raw_return") if row else None
+    return {
+        "horizon": horizon,
+        "raw_return": raw_return,
+        "spy_alpha": row.get("spy_alpha") if row else None,
+        "sector_alpha": row.get("sector_alpha") if row else None,
+        "status": result_status(score, raw_return),
+    }
 
 
 def _scalar(conn: sqlite3.Connection, query: str) -> Any:

@@ -26,9 +26,18 @@ def test_mock_pipeline_produces_non_empty_leaderboard_site(tmp_path):
 
     leaderboard_html = (docs_dir / "leaderboard.html").read_text(encoding="utf-8")
     index_html = (docs_dir / "index.html").read_text(encoding="utf-8")
+    stocks_html = (docs_dir / "stocks.html").read_text(encoding="utf-8")
+    aapl_html = (docs_dir / "stocks" / "AAPL.html").read_text(encoding="utf-8")
 
     assert "Mock Technical Summary" in leaderboard_html
     assert "Mock Analyst Consensus" in leaderboard_html
     assert "Mock Earnings Revision" in leaderboard_html
     assert "No leaderboard rows yet." not in leaderboard_html
     assert "Latest Leaderboard" in index_html
+    assert "Browse stocks" in index_html
+    assert "stocks.html" in leaderboard_html
+    assert "Apple Inc." in stocks_html
+    assert "Mock Technical Summary" in aapl_html
+    assert "SPY Alpha" in aapl_html
+    assert "Sector Alpha" in aapl_html
+    assert "correct" in aapl_html

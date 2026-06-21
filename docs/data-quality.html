@@ -170,6 +170,13 @@
     .num { text-align: right; font-variant-numeric: tabular-nums; }
     .positive { color: var(--positive); }
     .negative { color: var(--negative); }
+    .status {
+      font-weight: 700;
+      text-transform: capitalize;
+    }
+    .status.pending, .status.neutral { color: var(--muted); }
+    .status.correct { color: var(--positive); }
+    .status.incorrect { color: var(--negative); }
     .empty {
       border: 1px dashed var(--line);
       border-radius: 8px;
@@ -200,13 +207,14 @@
       <div class="brand">Signal League</div>
       <nav><a class="" href="index.html">Home</a>
 <a class="" href="leaderboard.html">Leaderboard</a>
+<a class="" href="stocks.html">Stocks</a>
 <a class="active" href="data-quality.html">Data Quality</a></nav>
     </div>
   </header>
   <main>
     <section>
 <h1>Data Quality</h1>
-<div class="grid"><div class="metric"><span>Last Collection</span><strong>2026-06-21T14:30:15+00:00</strong></div>
+<div class="grid"><div class="metric"><span>Last Collection</span><strong>2026-06-21T14:38:15+00:00</strong></div>
 <div class="metric"><span>Signals Collected</span><strong>30</strong></div>
 <div class="metric"><span>Price Rows</span><strong>2860</strong></div>
 <div class="metric"><span>Forward Returns</span><strong>150</strong></div>
@@ -227,7 +235,7 @@
             <th>Last Collection</th>
           </tr>
         </thead>
-        <tbody><tr><td>Mock Analyst Consensus</td><td class="num">10</td><td class="num">10</td><td class="num">0</td><td class="num">100.00%</td><td>2026-06-21T14:30:15+00:00</td></tr><tr><td>Mock Earnings Revision</td><td class="num">10</td><td class="num">10</td><td class="num">0</td><td class="num">100.00%</td><td>2026-06-21T14:30:15+00:00</td></tr><tr><td>Mock Technical Summary</td><td class="num">10</td><td class="num">10</td><td class="num">0</td><td class="num">100.00%</td><td>2026-06-21T14:30:15+00:00</td></tr></tbody>
+        <tbody><tr><td>Mock Analyst Consensus</td><td class="num">10</td><td class="num">10</td><td class="num">0</td><td class="num">100.00%</td><td>2026-06-21T14:38:15+00:00</td></tr><tr><td>Mock Earnings Revision</td><td class="num">10</td><td class="num">10</td><td class="num">0</td><td class="num">100.00%</td><td>2026-06-21T14:38:15+00:00</td></tr><tr><td>Mock Technical Summary</td><td class="num">10</td><td class="num">10</td><td class="num">0</td><td class="num">100.00%</td><td>2026-06-21T14:38:15+00:00</td></tr></tbody>
       </table>
     </div>
     

@@ -170,6 +170,13 @@
     .num { text-align: right; font-variant-numeric: tabular-nums; }
     .positive { color: var(--positive); }
     .negative { color: var(--negative); }
+    .status {
+      font-weight: 700;
+      text-transform: capitalize;
+    }
+    .status.pending, .status.neutral { color: var(--muted); }
+    .status.correct { color: var(--positive); }
+    .status.incorrect { color: var(--negative); }
     .empty {
       border: 1px dashed var(--line);
       border-radius: 8px;
@@ -200,6 +207,7 @@
       <div class="brand">Signal League</div>
       <nav><a class="" href="index.html">Home</a>
 <a class="active" href="leaderboard.html">Leaderboard</a>
+<a class="" href="stocks.html">Stocks</a>
 <a class="" href="data-quality.html">Data Quality</a></nav>
     </div>
   </header>
@@ -207,6 +215,7 @@
     <section>
 <h1>Leaderboard</h1>
 <p>Default view is organized around 20D and 60D forward performance when those horizons are available.</p>
+<p><a class="button" href="stocks.html">Browse stock-level results</a></p>
 
     <div class="table-wrap">
       <table>

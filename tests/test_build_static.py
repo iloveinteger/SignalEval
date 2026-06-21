@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 
-from src.site.build_static import build_static_site
+from src.site.build_static import build_static_site, result_status
 from src.utils.db import (
     connect,
     create_collection_run,
@@ -28,6 +28,7 @@ def test_build_static_site_handles_empty_database(tmp_path):
 
     assert pages["index"].exists()
     assert pages["leaderboard"].exists()
+    assert pages["stocks"].exists()
     assert pages["data_quality"].exists()
     assert (export_dir / "leaderboard.json").exists()
     assert (export_dir / "data_quality.json").exists()
@@ -35,10 +36,14 @@ def test_build_static_site_handles_empty_database(tmp_path):
     index_html = pages["index"].read_text(encoding="utf-8")
     leaderboard_html = pages["leaderboard"].read_text(encoding="utf-8")
     quality_html = pages["data_quality"].read_text(encoding="utf-8")
+    stocks_html = pages["stocks"].read_text(encoding="utf-8")
 
     assert "not financial advice" in index_html
+    assert "stocks.html" in index_html
     assert "No evaluated signals are available yet." in index_html
     assert "No leaderboard rows yet." in leaderboard_html
+    assert "stocks.html" in leaderboard_html
+    assert "No tracked stocks are available yet." in stocks_html
     assert "No collection runs have been recorded yet." in quality_html
 
 
@@ -133,8 +138,30 @@ def test_build_static_site_renders_limited_sample_data(tmp_path):
     )
     leaderboard_html = pages["leaderboard"].read_text(encoding="utf-8")
     quality_html = pages["data_quality"].read_text(encoding="utf-8")
+    stocks_html = pages["stocks"].read_text(encoding="utf-8")
+    stock_html = pages["stock_AAPL"].read_text(encoding="utf-8")
 
     assert leaderboard["top_level"][0]["return_20d"] == 0.08
     assert "technical" in leaderboard_html
     assert "8.00%" in leaderboard_html
     assert "investing" in quality_html
+    assert 'href="stocks/AAPL.html"' in stocks_html
+    assert "Apple Inc." in stock_html
+    assert "Information Technology" in stock_html
+    assert "Hardware" in stock_html
+    assert "Buy" in stock_html
+    assert "100.00" in stock_html
+    assert "20D" in stock_html
+    assert "8.00%" in stock_html
+    assert "correct" in stock_html
+    assert "pending" in stock_html
+
+
+def test_result_status_classification():
+    assert result_status(1, None) == "pending"
+    assert result_status(0, 0.10) == "neutral"
+    assert result_status(1, 0.0) == "neutral"
+    assert result_status(1, 0.05) == "correct"
+    assert result_status(-1, -0.05) == "correct"
+    assert result_status(1, -0.05) == "incorrect"
+    assert result_status(-1, 0.05) == "incorrect"
