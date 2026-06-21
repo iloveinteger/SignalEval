@@ -1,26 +1,40 @@
 {
-  "generated_at": "2026-06-21T14:23:37+00:00",
-  "last_collection_time": null,
+  "generated_at": "2026-06-21T14:30:22+00:00",
+  "last_collection_time": "2026-06-21T14:30:15+00:00",
   "stocks_count": 10,
   "active_stocks_count": 10,
-  "signals_collected": 0,
+  "signals_collected": 30,
   "failed_signal_count": 0,
-  "prices_collected": 0,
-  "forward_returns_count": 0,
-  "latest_signal_date": null,
-  "latest_price_date": null,
-  "source_runs": [],
-  "missing_tickers": [
-    "AAPL",
-    "AMZN",
-    "GOOGL",
-    "JPM",
-    "META",
-    "MSFT",
-    "NVDA",
-    "TSLA",
-    "UNH",
-    "XOM"
+  "prices_collected": 2860,
+  "forward_returns_count": 150,
+  "latest_signal_date": "2026-01-02",
+  "latest_price_date": "2026-07-02",
+  "source_runs": [
+    {
+      "source": "Mock Analyst Consensus",
+      "attempted": 10,
+      "succeeded": 10,
+      "failed": 0,
+      "success_rate": 1.0,
+      "last_collection_time": "2026-06-21T14:30:15+00:00"
+    },
+    {
+      "source": "Mock Earnings Revision",
+      "attempted": 10,
+      "succeeded": 10,
+      "failed": 0,
+      "success_rate": 1.0,
+      "last_collection_time": "2026-06-21T14:30:15+00:00"
+    },
+    {
+      "source": "Mock Technical Summary",
+      "attempted": 10,
+      "succeeded": 10,
+      "failed": 0,
+      "success_rate": 1.0,
+      "last_collection_time": "2026-06-21T14:30:15+00:00"
+    }
   ],
+  "missing_tickers": [],
   "failed_tickers": []
 }

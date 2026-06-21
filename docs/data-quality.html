@@ -206,17 +206,33 @@
   <main>
     <section>
 <h1>Data Quality</h1>
-<div class="grid"><div class="metric"><span>Last Collection</span><strong>&mdash;</strong></div>
-<div class="metric"><span>Signals Collected</span><strong>0</strong></div>
-<div class="metric"><span>Price Rows</span><strong>0</strong></div>
-<div class="metric"><span>Forward Returns</span><strong>0</strong></div>
-<div class="metric"><span>Missing Tickers</span><strong>10</strong></div>
+<div class="grid"><div class="metric"><span>Last Collection</span><strong>2026-06-21T14:30:15+00:00</strong></div>
+<div class="metric"><span>Signals Collected</span><strong>30</strong></div>
+<div class="metric"><span>Price Rows</span><strong>2860</strong></div>
+<div class="metric"><span>Forward Returns</span><strong>150</strong></div>
+<div class="metric"><span>Missing Tickers</span><strong>0</strong></div>
 <div class="metric"><span>Failed Signals</span><strong>0</strong></div></div>
 </section>
 <section><h2>Source Success Rate</h2>
-<div class="empty">No collection runs have been recorded yet.</div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Source</th>
+            <th class="num">Attempted</th>
+            <th class="num">Succeeded</th>
+            <th class="num">Failed</th>
+            <th class="num">Success Rate</th>
+            <th>Last Collection</th>
+          </tr>
+        </thead>
+        <tbody><tr><td>Mock Analyst Consensus</td><td class="num">10</td><td class="num">10</td><td class="num">0</td><td class="num">100.00%</td><td>2026-06-21T14:30:15+00:00</td></tr><tr><td>Mock Earnings Revision</td><td class="num">10</td><td class="num">10</td><td class="num">0</td><td class="num">100.00%</td><td>2026-06-21T14:30:15+00:00</td></tr><tr><td>Mock Technical Summary</td><td class="num">10</td><td class="num">10</td><td class="num">0</td><td class="num">100.00%</td><td>2026-06-21T14:30:15+00:00</td></tr></tbody>
+      </table>
+    </div>
+    
 </section><section><h2>Missing Price Tickers</h2>
-<p>AAPL, AMZN, GOOGL, JPM, META, MSFT, NVDA, TSLA, UNH, XOM</p>
+<div class="empty">No active universe tickers are missing all price rows.</div>
 </section><section><h2>Failed Signal Rows</h2>
 <div class="empty">No failed signal rows are currently stored.</div>
 </section>

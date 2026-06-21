@@ -207,10 +207,47 @@
     <section>
 <h1>Leaderboard</h1>
 <p>Default view is organized around 20D and 60D forward performance when those horizons are available.</p>
-<div class="empty">No leaderboard rows yet. Collect signals, prices, and forward returns first.</div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Category</th>
+            <th>Source</th>
+            <th class="num">20D Return</th>
+            <th class="num">60D Return</th>
+            <th class="num">60D SPY Alpha</th>
+            <th class="num">60D Sector Alpha</th>
+            <th class="num">Hit Rate</th>
+            <th class="num">Sample</th>
+          </tr>
+        </thead>
+        <tbody><tr><td>analyst_consensus</td><td>Mock Analyst Consensus</td><td class="num positive">1.49%</td><td class="num positive">4.86%</td><td class="num positive">0.94%</td><td class="num negative">-0.36%</td><td class="num">70.00%</td><td class="num">10</td></tr><tr><td>earnings_revision</td><td>Mock Earnings Revision</td><td class="num positive">1.49%</td><td class="num positive">4.86%</td><td class="num positive">0.94%</td><td class="num negative">-0.36%</td><td class="num">70.00%</td><td class="num">10</td></tr><tr><td>technical</td><td>Mock Technical Summary</td><td class="num positive">1.49%</td><td class="num positive">4.86%</td><td class="num positive">0.94%</td><td class="num negative">-0.36%</td><td class="num">70.00%</td><td class="num">10</td></tr></tbody>
+      </table>
+    </div>
+    
 </section>
 <section><h2>All Horizons</h2>
-<div class="empty">No horizon-level metrics are available yet.</div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Category</th>
+                <th>Source</th>
+                <th class="num">Horizon</th>
+                <th class="num">Sample</th>
+                <th class="num">Hit Rate</th>
+                <th class="num">Avg Return</th>
+                <th class="num">Avg SPY Alpha</th>
+                <th class="num">Avg Sector Alpha</th>
+                <th class="num">Sharpe Like</th>
+              </tr>
+            </thead>
+            <tbody><tr><td>analyst_consensus</td><td>Mock Analyst Consensus</td><td class="num">1D</td><td class="num">10</td><td class="num">70.00%</td><td class="num positive">0.07%</td><td class="num positive">0.01%</td><td class="num negative">-0.01%</td><td class="num">0.403</td></tr><tr><td>analyst_consensus</td><td>Mock Analyst Consensus</td><td class="num">5D</td><td class="num">10</td><td class="num">70.00%</td><td class="num positive">0.36%</td><td class="num positive">0.04%</td><td class="num negative">-0.06%</td><td class="num">0.407</td></tr><tr><td>analyst_consensus</td><td>Mock Analyst Consensus</td><td class="num">20D</td><td class="num">10</td><td class="num">70.00%</td><td class="num positive">1.49%</td><td class="num positive">0.19%</td><td class="num negative">-0.22%</td><td class="num">0.420</td></tr><tr><td>analyst_consensus</td><td>Mock Analyst Consensus</td><td class="num">60D</td><td class="num">10</td><td class="num">70.00%</td><td class="num positive">4.86%</td><td class="num positive">0.94%</td><td class="num negative">-0.36%</td><td class="num">0.454</td></tr><tr><td>analyst_consensus</td><td>Mock Analyst Consensus</td><td class="num">120D</td><td class="num">10</td><td class="num">70.00%</td><td class="num positive">11.00%</td><td class="num positive">3.00%</td><td class="num positive">0.20%</td><td class="num">0.501</td></tr><tr><td>earnings_revision</td><td>Mock Earnings Revision</td><td class="num">1D</td><td class="num">10</td><td class="num">70.00%</td><td class="num positive">0.07%</td><td class="num positive">0.01%</td><td class="num negative">-0.01%</td><td class="num">0.403</td></tr><tr><td>earnings_revision</td><td>Mock Earnings Revision</td><td class="num">5D</td><td class="num">10</td><td class="num">70.00%</td><td class="num positive">0.36%</td><td class="num positive">0.04%</td><td class="num negative">-0.06%</td><td class="num">0.407</td></tr><tr><td>earnings_revision</td><td>Mock Earnings Revision</td><td class="num">20D</td><td class="num">10</td><td class="num">70.00%</td><td class="num positive">1.49%</td><td class="num positive">0.19%</td><td class="num negative">-0.22%</td><td class="num">0.420</td></tr><tr><td>earnings_revision</td><td>Mock Earnings Revision</td><td class="num">60D</td><td class="num">10</td><td class="num">70.00%</td><td class="num positive">4.86%</td><td class="num positive">0.94%</td><td class="num negative">-0.36%</td><td class="num">0.454</td></tr><tr><td>earnings_revision</td><td>Mock Earnings Revision</td><td class="num">120D</td><td class="num">10</td><td class="num">70.00%</td><td class="num positive">11.00%</td><td class="num positive">3.00%</td><td class="num positive">0.20%</td><td class="num">0.501</td></tr><tr><td>technical</td><td>Mock Technical Summary</td><td class="num">1D</td><td class="num">10</td><td class="num">70.00%</td><td class="num positive">0.07%</td><td class="num positive">0.01%</td><td class="num negative">-0.01%</td><td class="num">0.403</td></tr><tr><td>technical</td><td>Mock Technical Summary</td><td class="num">5D</td><td class="num">10</td><td class="num">70.00%</td><td class="num positive">0.36%</td><td class="num positive">0.04%</td><td class="num negative">-0.06%</td><td class="num">0.407</td></tr><tr><td>technical</td><td>Mock Technical Summary</td><td class="num">20D</td><td class="num">10</td><td class="num">70.00%</td><td class="num positive">1.49%</td><td class="num positive">0.19%</td><td class="num negative">-0.22%</td><td class="num">0.420</td></tr><tr><td>technical</td><td>Mock Technical Summary</td><td class="num">60D</td><td class="num">10</td><td class="num">70.00%</td><td class="num positive">4.86%</td><td class="num positive">0.94%</td><td class="num negative">-0.36%</td><td class="num">0.454</td></tr><tr><td>technical</td><td>Mock Technical Summary</td><td class="num">120D</td><td class="num">10</td><td class="num">70.00%</td><td class="num positive">11.00%</td><td class="num positive">3.00%</td><td class="num positive">0.20%</td><td class="num">0.501</td></tr></tbody>
+          </table>
+        </div>
+        
 </section>
   </main>
   <footer>
