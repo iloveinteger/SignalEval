@@ -1,0 +1,26 @@
+{
+  "generated_at": "2026-06-21T14:23:37+00:00",
+  "last_collection_time": null,
+  "stocks_count": 10,
+  "active_stocks_count": 10,
+  "signals_collected": 0,
+  "failed_signal_count": 0,
+  "prices_collected": 0,
+  "forward_returns_count": 0,
+  "latest_signal_date": null,
+  "latest_price_date": null,
+  "source_runs": [],
+  "missing_tickers": [
+    "AAPL",
+    "AMZN",
+    "GOOGL",
+    "JPM",
+    "META",
+    "MSFT",
+    "NVDA",
+    "TSLA",
+    "UNH",
+    "XOM"
+  ],
+  "failed_tickers": []
+}
