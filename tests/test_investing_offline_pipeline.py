@@ -40,9 +40,9 @@ def test_offline_investing_pipeline_builds_site_with_sample_and_control_sources(
     leaderboard_html = (docs_dir / "leaderboard.html").read_text(encoding="utf-8")
     aapl_html = (docs_dir / "stocks" / "AAPL.html").read_text(encoding="utf-8")
 
-    assert "Investing.com Technical Analysis (Sample)" in leaderboard_html
-    assert "Investing.com Financial / Analyst Summary (Sample)" in leaderboard_html
-    assert "Random Baseline (Control)" in leaderboard_html
-    assert "Investing.com Technical Analysis (Sample)" in aapl_html
-    assert "Investing.com Financial / Analyst Summary (Sample)" in aapl_html
-    assert "Random Baseline (Control)" in aapl_html
+    assert "Investing.com Technical Analysis (Saved Sample)" in leaderboard_html
+    assert "Investing.com Financial / Analyst Summary (Saved Sample)" in leaderboard_html
+    assert "Random Baseline (Control Group)" in leaderboard_html
+    assert "Investing.com Technical Analysis (Saved Sample)" in aapl_html
+    assert "Investing.com Financial / Analyst Summary (Saved Sample)" in aapl_html
+    assert "Random Baseline (Control Group)" in aapl_html

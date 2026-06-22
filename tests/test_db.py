@@ -105,6 +105,7 @@ def test_upsert_signal_respects_daily_source_uniqueness(tmp_path):
         "normalized_signal": "Buy",
         "score": 1,
         "price_at_signal": 410.0,
+        "metadata_json": {"timeframe": "Daily"},
         "collected_at": "2026-06-19T22:30:00+00:00",
         "success": 1,
     }
@@ -117,7 +118,7 @@ def test_upsert_signal_respects_daily_source_uniqueness(tmp_path):
 
         rows = conn.execute(
             """
-            SELECT raw_signal, score
+            SELECT raw_signal, score, metadata_json
             FROM signals
             WHERE date = ? AND ticker = ? AND source = ?
             """,
@@ -127,6 +128,7 @@ def test_upsert_signal_respects_daily_source_uniqueness(tmp_path):
     assert len(rows) == 1
     assert rows[0]["raw_signal"] == "Strong Buy"
     assert rows[0]["score"] == 2
+    assert rows[0]["metadata_json"] is not None
 
 
 def test_collection_run_tracking(tmp_path):

@@ -28,20 +28,25 @@ def test_build_static_site_handles_empty_database(tmp_path):
 
     assert pages["index"].exists()
     assert pages["leaderboard"].exists()
+    assert pages["portfolio"].exists()
     assert pages["stocks"].exists()
     assert pages["data_quality"].exists()
     assert (export_dir / "leaderboard.json").exists()
+    assert (export_dir / "portfolio.json").exists()
     assert (export_dir / "data_quality.json").exists()
 
     index_html = pages["index"].read_text(encoding="utf-8")
     leaderboard_html = pages["leaderboard"].read_text(encoding="utf-8")
+    portfolio_html = pages["portfolio"].read_text(encoding="utf-8")
     quality_html = pages["data_quality"].read_text(encoding="utf-8")
     stocks_html = pages["stocks"].read_text(encoding="utf-8")
 
     assert "not financial advice" in index_html
     assert "stocks.html" in index_html
+    assert "portfolio.html" in index_html
     assert "No evaluated signals are available yet." in index_html
     assert "No leaderboard rows yet." in leaderboard_html
+    assert "No portfolio rows are available yet." in portfolio_html
     assert "stocks.html" in leaderboard_html
     assert "No tracked stocks are available yet." in stocks_html
     assert "No collection runs have been recorded yet." in quality_html
@@ -76,6 +81,7 @@ def test_build_static_site_renders_limited_sample_data(tmp_path):
                     "normalized_signal": "Buy",
                     "score": 1,
                     "price_at_signal": 100.0,
+                    "metadata_json": {"daily_signal": "Buy"},
                     "collected_at": "2026-01-02T22:30:00+00:00",
                     "success": 1,
                 },
@@ -137,6 +143,7 @@ def test_build_static_site_renders_limited_sample_data(tmp_path):
         (export_dir / "leaderboard.json").read_text(encoding="utf-8")
     )
     leaderboard_html = pages["leaderboard"].read_text(encoding="utf-8")
+    portfolio_html = pages["portfolio"].read_text(encoding="utf-8")
     quality_html = pages["data_quality"].read_text(encoding="utf-8")
     stocks_html = pages["stocks"].read_text(encoding="utf-8")
     stock_html = pages["stock_AAPL"].read_text(encoding="utf-8")
@@ -155,6 +162,7 @@ def test_build_static_site_renders_limited_sample_data(tmp_path):
     assert "8.00%" in stock_html
     assert "correct" in stock_html
     assert "pending" in stock_html
+    assert "Portfolio" in portfolio_html
 
 
 def test_result_status_classification():

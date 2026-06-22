@@ -1,0 +1,174 @@
+{
+  "generated_at": "2026-06-22T08:02:00+00:00",
+  "initial_nav": 100.0,
+  "sources": [
+    {
+      "source": "Investing.com Financial / Analyst Summary",
+      "is_control": false,
+      "initial_nav": 100.0,
+      "latest_nav": 100.23161630253693,
+      "total_return": 0.002316163025369411,
+      "spy_latest_nav": 100.06416151096884,
+      "spy_total_return": 0.0006416151096884093,
+      "excess_return_vs_spy": 0.0016745479156810017,
+      "rebalance_days": 1,
+      "series": [
+        {
+          "signal_date": "2026-06-18",
+          "date": "2026-06-19",
+          "source": "Investing.com Financial / Analyst Summary",
+          "daily_return": 0.002316163025369411,
+          "nav": 100.23161630253693,
+          "spy_daily_return": 0.0006416151096884093,
+          "spy_nav": 100.06416151096884,
+          "cash_weight": 0.0,
+          "weights": {
+            "AAPL": 1.0
+          }
+        }
+      ]
+    },
+    {
+      "source": "Investing.com Technical Analysis",
+      "is_control": false,
+      "initial_nav": 100.0,
+      "latest_nav": 100.0,
+      "total_return": 0.0,
+      "spy_latest_nav": 100.06416151096884,
+      "spy_total_return": 0.0006416151096884093,
+      "excess_return_vs_spy": -0.0006416151096884093,
+      "rebalance_days": 1,
+      "series": [
+        {
+          "signal_date": "2026-06-18",
+          "date": "2026-06-19",
+          "source": "Investing.com Technical Analysis",
+          "daily_return": 0.0,
+          "nav": 100.0,
+          "spy_daily_return": 0.0006416151096884093,
+          "spy_nav": 100.06416151096884,
+          "cash_weight": 1.0,
+          "weights": {}
+        }
+      ]
+    },
+    {
+      "source": "Mock Analyst Consensus",
+      "is_control": false,
+      "initial_nav": 100.0,
+      "latest_nav": 100.17602897046977,
+      "total_return": 0.0017602897046977706,
+      "spy_latest_nav": 100.06414583333334,
+      "spy_total_return": 0.0006414583333334001,
+      "excess_return_vs_spy": 0.0011188313713643705,
+      "rebalance_days": 1,
+      "series": [
+        {
+          "signal_date": "2026-01-02",
+          "date": "2026-01-05",
+          "source": "Mock Analyst Consensus",
+          "daily_return": 0.0017602897046978538,
+          "nav": 100.17602897046977,
+          "spy_daily_return": 0.0006414583333334001,
+          "spy_nav": 100.06414583333334,
+          "cash_weight": 0.0,
+          "weights": {
+            "AAPL": 0.125,
+            "AMZN": 0.125,
+            "GOOGL": 0.25,
+            "MSFT": 0.25,
+            "NVDA": 0.125,
+            "XOM": 0.125
+          }
+        }
+      ]
+    },
+    {
+      "source": "Mock Earnings Revision",
+      "is_control": false,
+      "initial_nav": 100.0,
+      "latest_nav": 100.21180624151245,
+      "total_return": 0.0021180624151244665,
+      "spy_latest_nav": 100.06414583333334,
+      "spy_total_return": 0.0006414583333334001,
+      "excess_return_vs_spy": 0.0014766040817910664,
+      "rebalance_days": 1,
+      "series": [
+        {
+          "signal_date": "2026-01-02",
+          "date": "2026-01-05",
+          "source": "Mock Earnings Revision",
+          "daily_return": 0.00211806241512453,
+          "nav": 100.21180624151245,
+          "spy_daily_return": 0.0006414583333334001,
+          "spy_nav": 100.06414583333334,
+          "cash_weight": 0.0,
+          "weights": {
+            "AAPL": 0.14285714285714285,
+            "GOOGL": 0.14285714285714285,
+            "JPM": 0.14285714285714285,
+            "MSFT": 0.2857142857142857,
+            "NVDA": 0.2857142857142857
+          }
+        }
+      ]
+    },
+    {
+      "source": "Mock Technical Summary",
+      "is_control": false,
+      "initial_nav": 100.0,
+      "latest_nav": 100.21735422827473,
+      "total_return": 0.002173542282747354,
+      "spy_latest_nav": 100.06414583333334,
+      "spy_total_return": 0.0006414583333334001,
+      "excess_return_vs_spy": 0.0015320839494139538,
+      "rebalance_days": 1,
+      "series": [
+        {
+          "signal_date": "2026-01-02",
+          "date": "2026-01-05",
+          "source": "Mock Technical Summary",
+          "daily_return": 0.0021735422827472584,
+          "nav": 100.21735422827473,
+          "spy_daily_return": 0.0006414583333334001,
+          "spy_nav": 100.06414583333334,
+          "cash_weight": 0.0,
+          "weights": {
+            "AAPL": 0.2857142857142857,
+            "GOOGL": 0.14285714285714285,
+            "JPM": 0.14285714285714285,
+            "MSFT": 0.14285714285714285,
+            "NVDA": 0.2857142857142857
+          }
+        }
+      ]
+    },
+    {
+      "source": "Random Baseline",
+      "is_control": true,
+      "initial_nav": 100.0,
+      "latest_nav": 100.1546598701085,
+      "total_return": 0.001546598701084978,
+      "spy_latest_nav": 100.06416151096884,
+      "spy_total_return": 0.0006416151096884093,
+      "excess_return_vs_spy": 0.0009049835913965687,
+      "rebalance_days": 1,
+      "series": [
+        {
+          "signal_date": "2026-06-18",
+          "date": "2026-06-19",
+          "source": "Random Baseline",
+          "daily_return": 0.001546598701084867,
+          "nav": 100.1546598701085,
+          "spy_daily_return": 0.0006416151096884093,
+          "spy_nav": 100.06416151096884,
+          "cash_weight": 0.0,
+          "weights": {
+            "AMZN": 0.5,
+            "MSFT": 0.5
+          }
+        }
+      ]
+    }
+  ]
+}

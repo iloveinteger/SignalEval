@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import sqlite3
 from collections.abc import Iterable, Mapping
 from datetime import datetime, timezone
@@ -30,6 +31,7 @@ SCHEMA_STATEMENTS = (
       normalized_signal TEXT,
       score INTEGER,
       price_at_signal REAL,
+      metadata_json TEXT,
       collected_at TEXT NOT NULL,
       success INTEGER DEFAULT 1,
       error_message TEXT,
@@ -89,6 +91,7 @@ def connect(db_path: str | Path = DEFAULT_DB_PATH) -> sqlite3.Connection:
 def create_schema(conn: sqlite3.Connection) -> None:
     for statement in SCHEMA_STATEMENTS:
         conn.execute(statement)
+    _ensure_signals_columns(conn)
     conn.commit()
 
 
@@ -174,17 +177,19 @@ def upsert_signal(conn: sqlite3.Connection, signal: Mapping[str, Any]) -> None:
           normalized_signal,
           score,
           price_at_signal,
+          metadata_json,
           collected_at,
           success,
           error_message
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ON CONFLICT(date, ticker, source) DO UPDATE SET
           category = excluded.category,
           raw_signal = excluded.raw_signal,
           normalized_signal = excluded.normalized_signal,
           score = excluded.score,
           price_at_signal = excluded.price_at_signal,
+          metadata_json = excluded.metadata_json,
           collected_at = excluded.collected_at,
           success = excluded.success,
           error_message = excluded.error_message
@@ -198,6 +203,7 @@ def upsert_signal(conn: sqlite3.Connection, signal: Mapping[str, Any]) -> None:
             _optional_text(signal.get("normalized_signal")),
             signal.get("score"),
             signal.get("price_at_signal"),
+            _optional_json(signal.get("metadata_json")),
             collected_at,
             int(signal.get("success", 1)),
             _optional_text(signal.get("error_message")),
@@ -292,3 +298,21 @@ def _optional_text(value: Any) -> str | None:
         return None
     text = str(value).strip()
     return text or None
+
+
+def _optional_json(value: Any) -> str | None:
+    if value is None:
+        return None
+    if isinstance(value, str):
+        text = value.strip()
+        return text or None
+    return json.dumps(value, sort_keys=True)
+
+
+def _ensure_signals_columns(conn: sqlite3.Connection) -> None:
+    columns = {
+        row["name"]
+        for row in conn.execute("PRAGMA table_info(signals)").fetchall()
+    }
+    if "metadata_json" not in columns:
+        conn.execute("ALTER TABLE signals ADD COLUMN metadata_json TEXT")

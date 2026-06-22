@@ -16,183 +16,47 @@
       --negative: #b42318;
     }
     * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      color: var(--ink);
-      font: 15px/1.5 Arial, Helvetica, sans-serif;
-      background: #ffffff;
-    }
-    header {
-      border-bottom: 1px solid var(--line);
-      background: #ffffff;
-    }
-    .nav {
-      max-width: 1120px;
-      margin: 0 auto;
-      padding: 14px 20px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 18px;
-    }
-    .brand {
-      font-weight: 700;
-      letter-spacing: 0;
-    }
-    nav {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-    nav a, .button {
-      color: var(--ink);
-      text-decoration: none;
-      border: 1px solid var(--line);
-      border-radius: 6px;
-      padding: 7px 10px;
-      background: #ffffff;
-    }
-    nav a.active, .button {
-      border-color: var(--accent);
-      color: var(--accent);
-    }
-    main {
-      max-width: 1120px;
-      margin: 0 auto;
-      padding: 28px 20px 40px;
-    }
-    section {
-      margin: 0 0 32px;
-    }
-    .hero {
-      min-height: 280px;
-      display: grid;
-      grid-template-columns: minmax(0, 1.4fr) minmax(220px, .6fr);
-      gap: 32px;
-      align-items: center;
-      border-bottom: 1px solid var(--line);
-      padding-bottom: 28px;
-    }
-    h1 {
-      margin: 0 0 12px;
-      max-width: 820px;
-      font-size: 42px;
-      line-height: 1.08;
-      letter-spacing: 0;
-    }
-    h2 {
-      margin: 0 0 12px;
-      font-size: 22px;
-      letter-spacing: 0;
-    }
+    body { margin: 0; color: var(--ink); font: 15px/1.5 Arial, Helvetica, sans-serif; background: #ffffff; }
+    header { border-bottom: 1px solid var(--line); background: #ffffff; }
+    .nav { max-width: 1120px; margin: 0 auto; padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; gap: 18px; }
+    .brand { font-weight: 700; }
+    nav { display: flex; gap: 8px; flex-wrap: wrap; }
+    nav a, .button { color: var(--ink); text-decoration: none; border: 1px solid var(--line); border-radius: 6px; padding: 7px 10px; background: #ffffff; }
+    nav a.active, .button { border-color: var(--accent); color: var(--accent); }
+    main { max-width: 1120px; margin: 0 auto; padding: 28px 20px 40px; }
+    section { margin: 0 0 32px; }
+    .hero { min-height: 280px; display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(220px, .6fr); gap: 32px; align-items: center; border-bottom: 1px solid var(--line); padding-bottom: 28px; }
+    h1 { margin: 0 0 12px; max-width: 820px; font-size: 42px; line-height: 1.08; }
+    h2 { margin: 0 0 12px; font-size: 22px; }
     p { margin: 0 0 14px; }
-    .eyebrow {
-      margin-bottom: 10px;
-      color: var(--accent);
-      font-weight: 700;
-      text-transform: uppercase;
-      font-size: 12px;
-      letter-spacing: 0;
-    }
-    .lede {
-      color: var(--muted);
-      font-size: 18px;
-      max-width: 680px;
-    }
-    .signal-strip {
-      height: 180px;
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 8px;
-      align-items: end;
-      padding: 16px;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background: var(--panel);
-    }
-    .signal-strip span {
-      display: block;
-      min-height: 28px;
-      border-radius: 4px 4px 0 0;
-      background: var(--accent);
-    }
+    .eyebrow { margin-bottom: 10px; color: var(--accent); font-weight: 700; text-transform: uppercase; font-size: 12px; }
+    .lede { color: var(--muted); font-size: 18px; max-width: 680px; }
+    .signal-strip { height: 180px; display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; align-items: end; padding: 16px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); }
+    .signal-strip span { display: block; min-height: 28px; border-radius: 4px 4px 0 0; background: var(--accent); }
     .signal-strip span:nth-child(1) { height: 34%; background: #b42318; }
     .signal-strip span:nth-child(2) { height: 52%; background: #d97706; }
     .signal-strip span:nth-child(3) { height: 42%; background: #64748b; }
     .signal-strip span:nth-child(4) { height: 72%; background: #0b6bcb; }
     .signal-strip span:nth-child(5) { height: 88%; background: #147d47; }
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-      gap: 12px;
-    }
-    .metric {
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      padding: 12px;
-      background: var(--panel);
-    }
-    .metric span {
-      display: block;
-      color: var(--muted);
-      font-size: 12px;
-    }
-    .metric strong {
-      display: block;
-      margin-top: 4px;
-      font-size: 20px;
-    }
-    .table-wrap {
-      overflow-x: auto;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      min-width: 760px;
-      background: #ffffff;
-    }
-    th, td {
-      padding: 10px 12px;
-      border-bottom: 1px solid var(--line);
-      text-align: left;
-      vertical-align: top;
-    }
-    th {
-      background: var(--panel);
-      font-size: 12px;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 0;
-    }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; }
+    .metric { border: 1px solid var(--line); border-radius: 8px; padding: 12px; background: var(--panel); }
+    .metric span { display: block; color: var(--muted); font-size: 12px; }
+    .metric strong { display: block; margin-top: 4px; font-size: 20px; }
+    .table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; }
+    table { width: 100%; border-collapse: collapse; min-width: 760px; background: #ffffff; }
+    th, td { padding: 10px 12px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+    th { background: var(--panel); font-size: 12px; color: var(--muted); text-transform: uppercase; }
     tr:last-child td { border-bottom: 0; }
     .num { text-align: right; font-variant-numeric: tabular-nums; }
     .positive { color: var(--positive); }
     .negative { color: var(--negative); }
-    .status {
-      font-weight: 700;
-      text-transform: capitalize;
-    }
+    .status { font-weight: 700; text-transform: capitalize; }
     .status.pending, .status.neutral { color: var(--muted); }
     .status.correct { color: var(--positive); }
     .status.incorrect { color: var(--negative); }
-    .empty {
-      border: 1px dashed var(--line);
-      border-radius: 8px;
-      padding: 18px;
-      color: var(--muted);
-      background: var(--panel);
-    }
-    footer {
-      border-top: 1px solid var(--line);
-      color: var(--muted);
-      padding: 18px 20px 28px;
-    }
-    footer div {
-      max-width: 1120px;
-      margin: 0 auto;
-    }
+    .empty { border: 1px dashed var(--line); border-radius: 8px; padding: 18px; color: var(--muted); background: var(--panel); }
+    footer { border-top: 1px solid var(--line); color: var(--muted); padding: 18px 20px 28px; }
+    footer div { max-width: 1120px; margin: 0 auto; }
     @media (max-width: 760px) {
       .nav { align-items: flex-start; flex-direction: column; }
       .hero { grid-template-columns: 1fr; min-height: 0; }
@@ -207,12 +71,12 @@
       <div class="brand">Signal League</div>
       <nav><a class="" href="../index.html">Home</a>
 <a class="" href="../leaderboard.html">Leaderboard</a>
+<a class="" href="../portfolio.html">Portfolio</a>
 <a class="active" href="../stocks.html">Stocks</a>
 <a class="" href="../data-quality.html">Data Quality</a></nav>
     </div>
   </header>
-  <main>
-    <section><p><a class="button" href="../stocks.html">All stocks</a></p>
+  <main><section><p><a class="button" href="../stocks.html">All stocks</a></p>
 <h1>AMZN</h1>
 <p class="lede">Amazon.com Inc.</p>
 <div class="grid"><div class="metric"><span>Company</span><strong>Amazon.com Inc.</strong></div>
@@ -220,7 +84,7 @@
 <div class="metric"><span>Industry</span><strong>Broadline Retail</strong></div>
 <div class="metric"><span>Active</span><strong>Yes</strong></div></div>
 </section>
-<section><h2>Latest Signals</h2><p>Source labels indicate whether a row comes from an offline Investing.com sample, the control baseline, or a mock fixture.</p>
+<section><h2>Latest Signals</h2><p>Saved Investing.com samples are labeled clearly, and Random Baseline is marked as a control group rather than a real prediction source.</p>
 
     <div class="table-wrap">
       <table>
@@ -239,14 +103,11 @@
             <th>Status</th>
           </tr>
         </thead>
-        <tbody><tr><td>2026-06-18</td><td>Random Baseline (Control)</td><td>Strong Buy</td><td>Strong Buy</td><td class="num">2</td><td class="num">178.04</td><td class="num">1D</td><td class="num positive">0.12%</td><td class="num positive">0.05%</td><td class="num positive">0.04%</td><td><span class="status correct">correct</span></td></tr><tr><td>2026-06-18</td><td>Random Baseline (Control)</td><td>Strong Buy</td><td>Strong Buy</td><td class="num">2</td><td class="num">178.04</td><td class="num">5D</td><td class="num positive">0.58%</td><td class="num positive">0.26%</td><td class="num positive">0.22%</td><td><span class="status correct">correct</span></td></tr><tr><td>2026-06-18</td><td>Random Baseline (Control)</td><td>Strong Buy</td><td>Strong Buy</td><td class="num">2</td><td class="num">178.04</td><td class="num">20D</td><td class="num positive">2.36%</td><td class="num positive">1.07%</td><td class="num positive">0.91%</td><td><span class="status correct">correct</span></td></tr><tr><td>2026-06-18</td><td>Random Baseline (Control)</td><td>Strong Buy</td><td>Strong Buy</td><td class="num">2</td><td class="num">178.04</td><td class="num">60D</td><td class="num positive">7.24%</td><td class="num positive">3.31%</td><td class="num positive">2.83%</td><td><span class="status correct">correct</span></td></tr><tr><td>2026-06-18</td><td>Random Baseline (Control)</td><td>Strong Buy</td><td>Strong Buy</td><td class="num">2</td><td class="num">178.04</td><td class="num">120D</td><td class="num positive">15.00%</td><td class="num positive">7.00%</td><td class="num positive">6.00%</td><td><span class="status correct">correct</span></td></tr></tbody>
+        <tbody><tr><td>2026-01-02</td><td>Mock Analyst Consensus (Mock Fixture)</td><td>Buy</td><td>Buy</td><td class="num">1</td><td class="num">155.00</td><td class="num">1D</td><td class="num positive">0.12%</td><td class="num positive">0.05%</td><td class="num positive">0.04%</td><td><span class="status correct">correct</span></td></tr><tr><td>2026-01-02</td><td>Mock Analyst Consensus (Mock Fixture)</td><td>Buy</td><td>Buy</td><td class="num">1</td><td class="num">155.00</td><td class="num">5D</td><td class="num positive">0.58%</td><td class="num positive">0.26%</td><td class="num positive">0.22%</td><td><span class="status correct">correct</span></td></tr><tr><td>2026-01-02</td><td>Mock Analyst Consensus (Mock Fixture)</td><td>Buy</td><td>Buy</td><td class="num">1</td><td class="num">155.00</td><td class="num">20D</td><td class="num positive">2.36%</td><td class="num positive">1.07%</td><td class="num positive">0.91%</td><td><span class="status correct">correct</span></td></tr><tr><td>2026-01-02</td><td>Mock Analyst Consensus (Mock Fixture)</td><td>Buy</td><td>Buy</td><td class="num">1</td><td class="num">155.00</td><td class="num">60D</td><td class="num positive">7.24%</td><td class="num positive">3.32%</td><td class="num positive">2.84%</td><td><span class="status correct">correct</span></td></tr><tr><td>2026-01-02</td><td>Mock Analyst Consensus (Mock Fixture)</td><td>Buy</td><td>Buy</td><td class="num">1</td><td class="num">155.00</td><td class="num">120D</td><td class="num positive">15.00%</td><td class="num positive">7.00%</td><td class="num positive">6.00%</td><td><span class="status correct">correct</span></td></tr><tr><td>2026-01-02</td><td>Mock Earnings Revision (Mock Fixture)</td><td>#3 Hold</td><td>Hold</td><td class="num">0</td><td class="num">155.00</td><td class="num">1D</td><td class="num positive">0.12%</td><td class="num positive">0.05%</td><td class="num positive">0.04%</td><td><span class="status neutral">neutral</span></td></tr><tr><td>2026-01-02</td><td>Mock Earnings Revision (Mock Fixture)</td><td>#3 Hold</td><td>Hold</td><td class="num">0</td><td class="num">155.00</td><td class="num">5D</td><td class="num positive">0.58%</td><td class="num positive">0.26%</td><td class="num positive">0.22%</td><td><span class="status neutral">neutral</span></td></tr><tr><td>2026-01-02</td><td>Mock Earnings Revision (Mock Fixture)</td><td>#3 Hold</td><td>Hold</td><td class="num">0</td><td class="num">155.00</td><td class="num">20D</td><td class="num positive">2.36%</td><td class="num positive">1.07%</td><td class="num positive">0.91%</td><td><span class="status neutral">neutral</span></td></tr><tr><td>2026-01-02</td><td>Mock Earnings Revision (Mock Fixture)</td><td>#3 Hold</td><td>Hold</td><td class="num">0</td><td class="num">155.00</td><td class="num">60D</td><td class="num positive">7.24%</td><td class="num positive">3.32%</td><td class="num positive">2.84%</td><td><span class="status neutral">neutral</span></td></tr><tr><td>2026-01-02</td><td>Mock Earnings Revision (Mock Fixture)</td><td>#3 Hold</td><td>Hold</td><td class="num">0</td><td class="num">155.00</td><td class="num">120D</td><td class="num positive">15.00%</td><td class="num positive">7.00%</td><td class="num positive">6.00%</td><td><span class="status neutral">neutral</span></td></tr><tr><td>2026-01-02</td><td>Mock Technical Summary (Mock Fixture)</td><td>Neutral</td><td>Neutral</td><td class="num">0</td><td class="num">155.00</td><td class="num">1D</td><td class="num positive">0.12%</td><td class="num positive">0.05%</td><td class="num positive">0.04%</td><td><span class="status neutral">neutral</span></td></tr><tr><td>2026-01-02</td><td>Mock Technical Summary (Mock Fixture)</td><td>Neutral</td><td>Neutral</td><td class="num">0</td><td class="num">155.00</td><td class="num">5D</td><td class="num positive">0.58%</td><td class="num positive">0.26%</td><td class="num positive">0.22%</td><td><span class="status neutral">neutral</span></td></tr><tr><td>2026-01-02</td><td>Mock Technical Summary (Mock Fixture)</td><td>Neutral</td><td>Neutral</td><td class="num">0</td><td class="num">155.00</td><td class="num">20D</td><td class="num positive">2.36%</td><td class="num positive">1.07%</td><td class="num positive">0.91%</td><td><span class="status neutral">neutral</span></td></tr><tr><td>2026-01-02</td><td>Mock Technical Summary (Mock Fixture)</td><td>Neutral</td><td>Neutral</td><td class="num">0</td><td class="num">155.00</td><td class="num">60D</td><td class="num positive">7.24%</td><td class="num positive">3.32%</td><td class="num positive">2.84%</td><td><span class="status neutral">neutral</span></td></tr><tr><td>2026-01-02</td><td>Mock Technical Summary (Mock Fixture)</td><td>Neutral</td><td>Neutral</td><td class="num">0</td><td class="num">155.00</td><td class="num">120D</td><td class="num positive">15.00%</td><td class="num positive">7.00%</td><td class="num positive">6.00%</td><td><span class="status neutral">neutral</span></td></tr><tr><td>2026-06-18</td><td>Random Baseline (Control Group)</td><td>Strong Buy</td><td>Strong Buy</td><td class="num">2</td><td class="num">178.04</td><td class="num">1D</td><td class="num positive">0.12%</td><td class="num positive">0.05%</td><td class="num positive">0.04%</td><td><span class="status correct">correct</span></td></tr><tr><td>2026-06-18</td><td>Random Baseline (Control Group)</td><td>Strong Buy</td><td>Strong Buy</td><td class="num">2</td><td class="num">178.04</td><td class="num">5D</td><td class="num positive">0.58%</td><td class="num positive">0.26%</td><td class="num positive">0.22%</td><td><span class="status correct">correct</span></td></tr><tr><td>2026-06-18</td><td>Random Baseline (Control Group)</td><td>Strong Buy</td><td>Strong Buy</td><td class="num">2</td><td class="num">178.04</td><td class="num">20D</td><td class="num positive">2.36%</td><td class="num positive">1.07%</td><td class="num positive">0.91%</td><td><span class="status correct">correct</span></td></tr><tr><td>2026-06-18</td><td>Random Baseline (Control Group)</td><td>Strong Buy</td><td>Strong Buy</td><td class="num">2</td><td class="num">178.04</td><td class="num">60D</td><td class="num positive">7.24%</td><td class="num positive">3.31%</td><td class="num positive">2.83%</td><td><span class="status correct">correct</span></td></tr><tr><td>2026-06-18</td><td>Random Baseline (Control Group)</td><td>Strong Buy</td><td>Strong Buy</td><td class="num">2</td><td class="num">178.04</td><td class="num">120D</td><td class="num positive">15.00%</td><td class="num positive">7.00%</td><td class="num positive">6.00%</td><td><span class="status correct">correct</span></td></tr></tbody>
       </table>
     </div>
     
-</section>
-  </main>
-  <footer>
-    <div>Signal League is not financial advice. It evaluates historical public signals. Past performance does not imply future performance.</div>
-  </footer>
+</section></main>
+  <footer><div>Signal League is not financial advice. It evaluates historical public signals. Past performance does not imply future performance.</div></footer>
 </body>
 </html>

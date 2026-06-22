@@ -56,7 +56,7 @@ def test_collect_investing_sample_signals_inserts_investing_rows_and_keeps_basel
         rows = conn.execute(
             """
             SELECT date, ticker, source, category, raw_signal, normalized_signal,
-                   score, price_at_signal, success
+                   score, price_at_signal, metadata_json, success
             FROM signals
             ORDER BY source
             """
@@ -80,10 +80,12 @@ def test_collect_investing_sample_signals_inserts_investing_rows_and_keeps_basel
     assert technical["date"] == "2026-06-18"
     assert technical["ticker"] == "AAPL"
     assert technical["category"] == "technical"
-    assert technical["raw_signal"] == "Buy"
-    assert technical["normalized_signal"] == "Buy"
-    assert technical["score"] == 1
+    assert technical["raw_signal"] == "Neutral"
+    assert technical["normalized_signal"] == "Neutral"
+    assert technical["score"] == 0
     assert technical["price_at_signal"] == 298.01
+    assert '"selected_signal": "Buy"' in technical["metadata_json"]
+    assert '"daily_signal": "Neutral"' in technical["metadata_json"]
     assert technical["success"] == 1
 
     financial = next(row for row in rows if row["source"] == INVESTING_FINANCIAL_SOURCE)
@@ -94,6 +96,8 @@ def test_collect_investing_sample_signals_inserts_investing_rows_and_keeps_basel
     assert financial["normalized_signal"] == "Buy"
     assert financial["score"] == 1
     assert financial["price_at_signal"] == 298.01
+    assert '"analyst_total_count": 47' in financial["metadata_json"]
+    assert '"analyst_score_raw": 0.5531914893617021' in financial["metadata_json"]
     assert financial["success"] == 1
 
     baseline = next(row for row in rows if row["source"] == "Random Baseline")

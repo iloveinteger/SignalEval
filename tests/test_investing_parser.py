@@ -25,9 +25,9 @@ def test_parse_investing_technical_extracts_overall_signal_from_saved_html():
     assert signal.source == "Investing.com Technical Analysis"
     assert signal.category == "technical"
     assert signal.timeframe == "1h"
-    assert signal.raw_signal == "Buy"
-    assert signal.normalized_signal == "Buy"
-    assert signal.score == 1
+    assert signal.raw_signal == "Neutral"
+    assert signal.normalized_signal == "Neutral"
+    assert signal.score == 0
     assert signal.last_update_time == "2026-06-18 20:05:03"
     assert signal.moving_average_signal == "Buy"
     assert signal.moving_average_counts == {"buy": 7, "sell": 5}
@@ -37,6 +37,9 @@ def test_parse_investing_technical_extracts_overall_signal_from_saved_html():
         "neutral": 7,
         "sell": 1,
     }
+    assert signal.selected_signal == "Buy"
+    assert signal.selected_normalized_signal == "Buy"
+    assert signal.selected_score == 1
 
 
 def test_parse_investing_technical_also_exposes_daily_signal_from_saved_html():
@@ -44,6 +47,7 @@ def test_parse_investing_technical_also_exposes_daily_signal_from_saved_html():
 
     assert signal.daily_signal == "Neutral"
     assert signal.daily_last_update_time == "2026-06-18 20:05:03"
+    assert signal.timeframe_signals["Daily"] == "Neutral"
 
 
 def test_inspect_financial_summary_extracts_analyst_and_financial_fields():
@@ -58,6 +62,11 @@ def test_inspect_financial_summary_extracts_analyst_and_financial_fields():
     assert inspection.analyst_fields["sell_ratings"] == "3 Sell"
     assert inspection.analyst_fields["price_target_average"] == "314.42"
     assert inspection.analyst_fields["price_target_upside"] == "(+5.51% Upside)"
+    assert inspection.analyst_vote_counts == {"buy": 29, "hold": 15, "sell": 3}
+    assert inspection.analyst_total_count == 47
+    assert round(inspection.analyst_score_raw or 0.0, 3) == 0.553
+    assert inspection.analyst_consensus_signal == "Buy"
+    assert inspection.analyst_consensus_score == 1
 
     assert inspection.contains_financial_signal_fields
     assert inspection.financial_fields == {
