@@ -26,8 +26,8 @@ and past performance does not imply future performance.
 ## Current Investing Parser Coverage
 
 The offline Investing.com parser works from saved HTML samples. Offline sample
-mode remains supported. Live crawling is limited to the existing AAPL-only
-debug path.
+mode remains supported. Live crawling now supports the 10 configured starter
+tickers through either direct HTTP mode or Playwright Chromium browser mode.
 
 - Technical parser:
   - uses the `Daily` timeframe as the official score-bearing signal
@@ -63,7 +63,10 @@ debug path.
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install -r requirements.txt
+python -m playwright install chromium
 ```
+
+`python -m playwright install chromium` is required only for `--browser` mode.
 
 ## Run Tests
 
@@ -82,3 +85,24 @@ python scripts/compute_returns.py
 python scripts/simulate_portfolio.py
 python scripts/build_site.py
 ```
+
+## Live Investing Collection
+
+Direct HTTP mode stays available:
+
+```powershell
+python scripts/collect_investing_samples.py --live --ticker AAPL
+python scripts/collect_investing_samples.py --live --limit 10
+```
+
+Browser mode uses Playwright Chromium and is intended for cases where direct
+HTTP gets blocked:
+
+```powershell
+python scripts/collect_investing_samples.py --browser --ticker AAPL
+python scripts/collect_investing_samples.py --browser --limit 10
+```
+
+Both live modes read URLs from `config/investing_slugs.csv`, save fetched HTML
+into `samples/investing/live-cache/{TICKER}/`, and parse the saved HTML with the
+existing offline parser.

@@ -73,7 +73,8 @@ Current parser behavior:
 - extracts the daily signal
 - stores non-daily timeframes as metadata
 - does not remove offline sample mode
-- does not expand live crawling beyond the existing AAPL-only path
+- supports optional live collection for the configured 10 starter tickers
+  through direct HTTP or Playwright browser mode
 
 ### Investing.com Analyst / Financial Consensus
 

@@ -16,6 +16,7 @@ from src.collectors.investing import (  # noqa: E402
     DEFAULT_FETCH_TIMEOUT_SECONDS,
     DEFAULT_USER_AGENT,
     InvestingFetchError,
+    collect_investing_browser_signals,
     collect_investing_live_signals,
     collect_investing_sample_signals,
 )
@@ -27,7 +28,8 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description=(
             "Collect Investing.com signals either from saved HTML samples or, "
-            "when requested explicitly, from live configured starter tickers."
+            "when requested explicitly, from configured starter tickers via "
+            "direct HTTP or Playwright browser mode."
         )
     )
     parser.add_argument("--db", type=Path, default=DEFAULT_DB_PATH)
@@ -42,32 +44,46 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--live",
         action="store_true",
-        help="Fetch live Investing HTML for configured starter tickers, then parse it with the existing parser.",
+        help="Fetch live Investing HTML over direct HTTP for configured starter tickers, then parse it with the existing parser.",
+    )
+    parser.add_argument(
+        "--browser",
+        action="store_true",
+        help="Fetch live Investing HTML with Playwright Chromium for configured starter tickers, then parse it with the existing parser.",
     )
     parser.add_argument(
         "--ticker",
         action="append",
         default=None,
-        help="Optional live-mode ticker filter. Can be passed more than once.",
+        help="Optional live/browser ticker filter. Can be passed more than once.",
+    )
+    parser.add_argument(
+        "--limit",
+        type=int,
+        default=None,
+        help="Optional live/browser ticker limit after filtering and de-duplication.",
     )
     parser.add_argument(
         "--timeout-seconds",
         type=float,
         default=DEFAULT_FETCH_TIMEOUT_SECONDS,
-        help="Live mode only: HTTP timeout per request.",
+        help="Live/browser mode only: timeout per page request.",
     )
     parser.add_argument(
         "--retries",
         type=int,
         default=DEFAULT_FETCH_RETRIES,
-        help="Live mode only: number of HTTP fetch attempts per page.",
+        help="Live/browser mode only: number of fetch attempts per page.",
     )
     parser.add_argument(
         "--user-agent",
         default=DEFAULT_USER_AGENT,
-        help="Live mode only: HTTP User-Agent header.",
+        help="Live/browser mode only: User-Agent header.",
     )
-    return parser.parse_args()
+    args = parser.parse_args()
+    if args.live and args.browser:
+        parser.error("--live and --browser are mutually exclusive")
+    return args
 
 
 def main() -> None:
@@ -76,11 +92,28 @@ def main() -> None:
 
     with connect(args.db) as conn:
         create_schema(conn)
-        if args.live:
+        if args.browser:
+            try:
+                result = collect_investing_browser_signals(
+                    conn,
+                    tickers=args.ticker,
+                    limit=args.limit,
+                    slugs_path=args.slugs,
+                    cache_dir=args.live_cache_dir,
+                    signal_date=args.date,
+                    timeout_seconds=args.timeout_seconds,
+                    retries=args.retries,
+                    user_agent=args.user_agent,
+                )
+            except InvestingFetchError as exc:
+                print(f"Investing browser fetch failed gracefully: {exc}")
+                return
+        elif args.live:
             try:
                 result = collect_investing_live_signals(
                     conn,
                     tickers=args.ticker,
+                    limit=args.limit,
                     slugs_path=args.slugs,
                     cache_dir=args.live_cache_dir,
                     signal_date=args.date,
