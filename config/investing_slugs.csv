@@ -1,0 +1,11 @@
+ticker,technical_url,financial_url
+AAPL,https://www.investing.com/equities/apple-computer-inc-technical,https://www.investing.com/equities/apple-computer-inc-financial-summary
+MSFT,https://www.investing.com/equities/microsoft-corp-technical,https://www.investing.com/equities/microsoft-corp-financial-summary
+NVDA,https://www.investing.com/equities/nvidia-corp-technical,https://www.investing.com/equities/nvidia-corp-financial-summary
+AMZN,https://www.investing.com/equities/amazon-com-inc-technical,https://www.investing.com/equities/amazon-com-inc-financial-summary
+GOOGL,https://www.investing.com/equities/alphabet-inc-a-technical,https://www.investing.com/equities/alphabet-inc-a-financial-summary
+META,https://www.investing.com/equities/facebook-inc-technical,https://www.investing.com/equities/facebook-inc-financial-summary
+TSLA,https://www.investing.com/equities/tesla-motors-technical,https://www.investing.com/equities/tesla-motors-financial-summary
+JPM,https://www.investing.com/equities/jpmorgan-chase-technical,https://www.investing.com/equities/jpmorgan-chase-financial-summary
+XOM,https://www.investing.com/equities/exxon-mobil-technical,https://www.investing.com/equities/exxon-mobil-financial-summary
+UNH,https://www.investing.com/equities/unitedhealth-group-technical,https://www.investing.com/equities/unitedhealth-group-financial-summary

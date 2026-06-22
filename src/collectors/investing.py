@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import csv
 import html
 import json
 import re
@@ -30,25 +31,20 @@ INVESTING_FINANCIAL_SOURCE = "Investing.com Financial / Analyst Summary"
 INVESTING_FINANCIAL_CATEGORY = "analyst_consensus"
 DEFAULT_INVESTING_SAMPLES_DIR = Path(__file__).resolve().parents[2] / "samples" / "investing"
 DEFAULT_INVESTING_LIVE_CACHE_DIR = DEFAULT_INVESTING_SAMPLES_DIR / "live-cache"
+DEFAULT_INVESTING_SLUGS_PATH = Path(__file__).resolve().parents[2] / "config" / "investing_slugs.csv"
 TECHNICAL_SAMPLE_FILENAME = "AAPL Technical Analysis, RSI and Moving Averages - Investing.com.html"
 FINANCIAL_SAMPLE_FILENAME = "NASDAQ_AAPL Financials _ Apple - Investing.com.html"
-LIVE_TECHNICAL_CACHE_FILENAME = "AAPL Technical Analysis, RSI and Moving Averages - Investing.com.live.html"
-LIVE_FINANCIAL_CACHE_FILENAME = "NASDAQ_AAPL Financials _ Apple - Investing.com.live.html"
-LIVE_SUPPORTED_TICKER = "AAPL"
+LIVE_TECHNICAL_CACHE_FILENAME = "technical.html"
+LIVE_FINANCIAL_CACHE_FILENAME = "financial.html"
 DEFAULT_FETCH_TIMEOUT_SECONDS = 15.0
 DEFAULT_FETCH_RETRIES = 3
 DEFAULT_FETCH_SLEEP_SECONDS = 1.0
+REQUIRED_SLUG_COLUMNS = ("ticker", "technical_url", "financial_url")
 DEFAULT_USER_AGENT = (
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
     "AppleWebKit/537.36 (KHTML, like Gecko) "
     "Chrome/137.0.0.0 Safari/537.36"
 )
-INVESTING_TECHNICAL_URL_BY_TICKER = {
-    "AAPL": "https://www.investing.com/equities/apple-computer-inc-technical",
-}
-INVESTING_FINANCIAL_URL_BY_TICKER = {
-    "AAPL": "https://www.investing.com/equities/apple-computer-inc-financial-summary",
-}
 
 _NEXT_DATA_RE = re.compile(
     r"<script\s+id=[\"']__NEXT_DATA__[\"'][^>]*>(.*?)</script>",
@@ -176,7 +172,8 @@ def parse_investing_technical_file(path: str | Path) -> InvestingTechnicalSignal
 def collect_investing_live_signals(
     conn: sqlite3.Connection,
     *,
-    ticker: str = LIVE_SUPPORTED_TICKER,
+    tickers: list[str] | tuple[str, ...] | None = None,
+    slugs_path: str | Path = DEFAULT_INVESTING_SLUGS_PATH,
     cache_dir: str | Path = DEFAULT_INVESTING_LIVE_CACHE_DIR,
     signal_date: str | None = None,
     timeout_seconds: float = DEFAULT_FETCH_TIMEOUT_SECONDS,
@@ -184,7 +181,8 @@ def collect_investing_live_signals(
     sleep_seconds: float = DEFAULT_FETCH_SLEEP_SECONDS,
     user_agent: str = DEFAULT_USER_AGENT,
 ) -> dict[str, int]:
-    normalized_ticker = _validate_live_ticker(ticker)
+    slug_map = load_investing_slug_map(slugs_path)
+    live_tickers = _resolve_live_tickers(tickers, slug_map)
     cache_path = Path(cache_dir)
     collected_at = utc_now_iso()
 
@@ -192,93 +190,118 @@ def collect_investing_live_signals(
     succeeded = 0
     failed = 0
     stored = 0
-    resolved_signal_date = signal_date
 
     with conn:
-        for source, page_kind, build_signal in (
-            (
-                INVESTING_TECHNICAL_SOURCE,
-                "technical",
-                lambda html_text, run_date: build_investing_technical_signal_from_html(
-                    conn,
-                    ticker=normalized_ticker,
-                    html_text=html_text,
-                    signal_date=run_date,
-                    collected_at=collected_at,
+        for ticker in live_tickers:
+            resolved_signal_date = signal_date
+            for source, category, page_kind, build_signal in (
+                (
+                    INVESTING_TECHNICAL_SOURCE,
+                    INVESTING_TECHNICAL_CATEGORY,
+                    "technical",
+                    lambda html_text, run_date: build_investing_technical_signal_from_html(
+                        conn,
+                        ticker=ticker,
+                        html_text=html_text,
+                        signal_date=run_date,
+                        collected_at=collected_at,
+                    ),
                 ),
-            ),
-            (
-                INVESTING_FINANCIAL_SOURCE,
-                "financial",
-                lambda html_text, run_date: build_investing_financial_signal_from_html(
-                    conn,
-                    ticker=normalized_ticker,
-                    html_text=html_text,
-                    signal_date=run_date,
-                    collected_at=collected_at,
+                (
+                    INVESTING_FINANCIAL_SOURCE,
+                    INVESTING_FINANCIAL_CATEGORY,
+                    "financial",
+                    lambda html_text, run_date: build_investing_financial_signal_from_html(
+                        conn,
+                        ticker=ticker,
+                        html_text=html_text,
+                        signal_date=run_date,
+                        collected_at=collected_at,
+                    ),
                 ),
-            ),
-        ):
-            attempted += 1
-            run_id = create_collection_run(
-                conn,
-                run_date=resolved_signal_date or date.today().isoformat(),
-                source=source,
-                started_at=collected_at,
-            )
-            try:
-                html_text = fetch_investing_live_html(
-                    ticker=normalized_ticker,
-                    page_kind=page_kind,
-                    timeout_seconds=timeout_seconds,
-                    retries=retries,
-                    sleep_seconds=sleep_seconds,
-                    user_agent=user_agent,
+            ):
+                attempted += 1
+                run_id = create_collection_run(
+                    conn,
+                    run_date=resolved_signal_date or date.today().isoformat(),
+                    source=source,
+                    started_at=collected_at,
                 )
-                cache_file = save_investing_live_html(
-                    html_text,
-                    ticker=normalized_ticker,
-                    page_kind=page_kind,
-                    cache_dir=cache_path,
-                )
-                logger.info(
-                    "Saved Investing %s HTML for %s to %s",
-                    page_kind,
-                    normalized_ticker,
-                    cache_file,
-                )
-
-                if resolved_signal_date is None:
-                    resolved_signal_date = (
-                        _live_signal_date_from_html(html_text)
-                        or date.today().isoformat()
+                try:
+                    logger.info("Fetching Investing %s page for %s", page_kind, ticker)
+                    html_text = fetch_investing_live_html(
+                        ticker=ticker,
+                        page_kind=page_kind,
+                        slugs_path=slugs_path,
+                        timeout_seconds=timeout_seconds,
+                        retries=retries,
+                        sleep_seconds=sleep_seconds,
+                        user_agent=user_agent,
+                    )
+                    cache_file = save_investing_live_html(
+                        html_text,
+                        ticker=ticker,
+                        page_kind=page_kind,
+                        cache_dir=cache_path,
+                    )
+                    logger.info(
+                        "Saved Investing %s HTML for %s to %s",
+                        page_kind,
+                        ticker,
+                        cache_file,
                     )
 
-                signal = build_signal(html_text, resolved_signal_date)
-                upsert_signal(conn, signal.as_db_row())
-                succeeded += 1
-                stored += 1
-                source_succeeded = 1
-                source_failed = 0
-            except Exception as exc:
-                failed += 1
-                logger.error(
-                    "Investing live %s fetch failed for %s: %s",
-                    page_kind,
-                    normalized_ticker,
-                    exc,
-                )
-                source_succeeded = 0
-                source_failed = 1
+                    if page_kind == "technical" and resolved_signal_date is None:
+                        resolved_signal_date = (
+                            _live_signal_date_from_html(html_text)
+                            or date.today().isoformat()
+                        )
 
-            finish_collection_run(
-                conn,
-                run_id=run_id,
-                attempted=1,
-                succeeded=source_succeeded,
-                failed=source_failed,
-                finished_at=utc_now_iso(),
-            )
+                    signal = build_signal(html_text, resolved_signal_date or date.today().isoformat())
+                    upsert_signal(conn, signal.as_db_row())
+                    succeeded += 1
+                    stored += 1
+                    source_succeeded = 1
+                    source_failed = 0
+                except Exception as exc:
+                    failed += 1
+                    logger.error(
+                        "Investing live %s fetch failed for %s: %s",
+                        page_kind,
+                        ticker,
+                        exc,
+                    )
+                    upsert_signal(
+                        conn,
+                        {
+                            "date": resolved_signal_date or signal_date or date.today().isoformat(),
+                            "ticker": ticker,
+                            "source": source,
+                            "category": category,
+                            "raw_signal": None,
+                            "normalized_signal": None,
+                            "score": None,
+                            "price_at_signal": None,
+                            "metadata_json": None,
+                            "collected_at": utc_now_iso(),
+                            "success": 0,
+                            "error_message": str(exc),
+                        },
+                    )
+                    source_succeeded = 0
+                    source_failed = 1
+
+                finish_collection_run(
+                    conn,
+                    run_id=run_id,
+                    attempted=1,
+                    succeeded=source_succeeded,
+                    failed=source_failed,
+                    finished_at=utc_now_iso(),
+                )
+
+                if sleep_seconds > 0:
+                    time.sleep(sleep_seconds)
 
     return {
         "attempted": attempted,
@@ -593,13 +616,15 @@ def fetch_investing_live_html(
     *,
     ticker: str,
     page_kind: str,
+    slugs_path: str | Path = DEFAULT_INVESTING_SLUGS_PATH,
     timeout_seconds: float = DEFAULT_FETCH_TIMEOUT_SECONDS,
     retries: int = DEFAULT_FETCH_RETRIES,
     sleep_seconds: float = DEFAULT_FETCH_SLEEP_SECONDS,
     user_agent: str = DEFAULT_USER_AGENT,
 ) -> str:
-    normalized_ticker = _validate_live_ticker(ticker)
-    url = _live_url_for(normalized_ticker, page_kind)
+    slug_map = load_investing_slug_map(slugs_path)
+    normalized_ticker = _validate_live_ticker(ticker, slug_map)
+    url = _live_url_for(normalized_ticker, page_kind, slug_map)
     headers = {
         "User-Agent": user_agent,
         "Accept": (
@@ -653,8 +678,8 @@ def save_investing_live_html(
     page_kind: str,
     cache_dir: str | Path = DEFAULT_INVESTING_LIVE_CACHE_DIR,
 ) -> Path:
-    normalized_ticker = _validate_live_ticker(ticker)
-    cache_path = Path(cache_dir)
+    normalized_ticker = str(ticker).strip().upper()
+    cache_path = Path(cache_dir) / normalized_ticker
     cache_path.mkdir(parents=True, exist_ok=True)
     if page_kind == "technical":
         filename = LIVE_TECHNICAL_CACHE_FILENAME
@@ -900,26 +925,73 @@ def _required_ticker(ticker: str | None, source_path: str | Path) -> str:
     return str(ticker).upper()
 
 
-def _validate_live_ticker(ticker: str) -> str:
+def load_investing_slug_map(
+    path: str | Path = DEFAULT_INVESTING_SLUGS_PATH,
+) -> dict[str, dict[str, str]]:
+    csv_path = Path(path)
+    with csv_path.open(newline="", encoding="utf-8") as handle:
+        reader = csv.DictReader(handle)
+        fieldnames = reader.fieldnames or []
+        missing_columns = [column for column in REQUIRED_SLUG_COLUMNS if column not in fieldnames]
+        if missing_columns:
+            joined = ", ".join(missing_columns)
+            raise ValueError(f"{csv_path} is missing required columns: {joined}")
+
+        slug_map: dict[str, dict[str, str]] = {}
+        for line_number, row in enumerate(reader, start=2):
+            ticker = _required_csv_value(row, "ticker", line_number).upper()
+            if ticker in slug_map:
+                raise ValueError(f"Duplicate Investing slug ticker {ticker!r} on line {line_number}")
+            slug_map[ticker] = {
+                "technical": _required_csv_value(row, "technical_url", line_number),
+                "financial": _required_csv_value(row, "financial_url", line_number),
+            }
+
+    if not slug_map:
+        raise ValueError(f"{csv_path} does not contain any Investing slug rows")
+    return slug_map
+
+
+def _resolve_live_tickers(
+    tickers: list[str] | tuple[str, ...] | None,
+    slug_map: dict[str, dict[str, str]],
+) -> list[str]:
+    if not tickers:
+        return list(slug_map)
+    resolved: list[str] = []
+    seen: set[str] = set()
+    for ticker in tickers:
+        normalized = _validate_live_ticker(ticker, slug_map)
+        if normalized not in seen:
+            seen.add(normalized)
+            resolved.append(normalized)
+    return resolved
+
+
+def _validate_live_ticker(ticker: str, slug_map: dict[str, dict[str, str]]) -> str:
     normalized_ticker = str(ticker).strip().upper()
-    if normalized_ticker != LIVE_SUPPORTED_TICKER:
+    if normalized_ticker not in slug_map:
         raise InvestingFetchError(
-            f"Live Investing fetch currently supports only {LIVE_SUPPORTED_TICKER}"
+            f"Live Investing fetch currently supports only configured starter tickers; got {normalized_ticker}"
         )
     return normalized_ticker
 
 
-def _live_url_for(ticker: str, page_kind: str) -> str:
+def _live_url_for(
+    ticker: str,
+    page_kind: str,
+    slug_map: dict[str, dict[str, str]],
+) -> str:
     if page_kind == "technical":
         try:
-            return INVESTING_TECHNICAL_URL_BY_TICKER[ticker]
+            return slug_map[ticker]["technical"]
         except KeyError as exc:
             raise InvestingFetchError(
                 f"No Investing technical URL is configured for {ticker}"
             ) from exc
     if page_kind == "financial":
         try:
-            return INVESTING_FINANCIAL_URL_BY_TICKER[ticker]
+            return slug_map[ticker]["financial"]
         except KeyError as exc:
             raise InvestingFetchError(
                 f"No Investing financial URL is configured for {ticker}"
@@ -977,6 +1049,17 @@ def _clean_text(value: str) -> str:
 
 def _is_unlocked_value(value: str) -> bool:
     return _clean_text(value).casefold() not in _LOCKED_VALUES
+
+
+def _required_csv_value(
+    row: dict[str, str | None],
+    field: str,
+    line_number: int,
+) -> str:
+    value = row.get(field)
+    if value is None or value.strip() == "":
+        raise ValueError(f"Missing {field!r} in Investing slug config on line {line_number}")
+    return value.strip()
 
 
 def _parse_int_prefix(value: str | None) -> int | None:

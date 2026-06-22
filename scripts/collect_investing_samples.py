@@ -11,10 +11,10 @@ if str(PROJECT_ROOT) not in sys.path:
 from src.collectors.investing import (  # noqa: E402
     DEFAULT_INVESTING_SAMPLES_DIR,
     DEFAULT_INVESTING_LIVE_CACHE_DIR,
+    DEFAULT_INVESTING_SLUGS_PATH,
     DEFAULT_FETCH_RETRIES,
     DEFAULT_FETCH_TIMEOUT_SECONDS,
     DEFAULT_USER_AGENT,
-    LIVE_SUPPORTED_TICKER,
     InvestingFetchError,
     collect_investing_live_signals,
     collect_investing_sample_signals,
@@ -27,12 +27,13 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description=(
             "Collect Investing.com signals either from saved HTML samples or, "
-            "when requested explicitly, from a live AAPL fetch."
+            "when requested explicitly, from live configured starter tickers."
         )
     )
     parser.add_argument("--db", type=Path, default=DEFAULT_DB_PATH)
     parser.add_argument("--samples-dir", type=Path, default=DEFAULT_INVESTING_SAMPLES_DIR)
     parser.add_argument("--live-cache-dir", type=Path, default=DEFAULT_INVESTING_LIVE_CACHE_DIR)
+    parser.add_argument("--slugs", type=Path, default=DEFAULT_INVESTING_SLUGS_PATH)
     parser.add_argument(
         "--date",
         default=None,
@@ -41,12 +42,13 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--live",
         action="store_true",
-        help="Fetch live Investing HTML for AAPL only, then parse it with the existing parser.",
+        help="Fetch live Investing HTML for configured starter tickers, then parse it with the existing parser.",
     )
     parser.add_argument(
         "--ticker",
-        default=LIVE_SUPPORTED_TICKER,
-        help=f"Ticker for live mode. Only {LIVE_SUPPORTED_TICKER} is supported.",
+        action="append",
+        default=None,
+        help="Optional live-mode ticker filter. Can be passed more than once.",
     )
     parser.add_argument(
         "--timeout-seconds",
@@ -78,7 +80,8 @@ def main() -> None:
             try:
                 result = collect_investing_live_signals(
                     conn,
-                    ticker=args.ticker,
+                    tickers=args.ticker,
+                    slugs_path=args.slugs,
                     cache_dir=args.live_cache_dir,
                     signal_date=args.date,
                     timeout_seconds=args.timeout_seconds,
