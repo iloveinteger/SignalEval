@@ -1,38 +1,38 @@
 {
-  "generated_at": "2026-06-21T14:38:24+00:00",
-  "last_collection_time": "2026-06-21T14:38:15+00:00",
+  "generated_at": "2026-06-22T07:13:42+00:00",
+  "last_collection_time": "2026-06-22T07:13:32+00:00",
   "stocks_count": 10,
   "active_stocks_count": 10,
-  "signals_collected": 30,
+  "signals_collected": 12,
   "failed_signal_count": 0,
-  "prices_collected": 2860,
-  "forward_returns_count": 150,
-  "latest_signal_date": "2026-01-02",
-  "latest_price_date": "2026-07-02",
+  "prices_collected": 5720,
+  "forward_returns_count": 60,
+  "latest_signal_date": "2026-06-18",
+  "latest_price_date": "2026-12-31",
   "source_runs": [
     {
-      "source": "Mock Analyst Consensus",
-      "attempted": 10,
-      "succeeded": 10,
+      "source": "Investing.com Financial / Analyst Summary",
+      "attempted": 1,
+      "succeeded": 1,
       "failed": 0,
       "success_rate": 1.0,
-      "last_collection_time": "2026-06-21T14:38:15+00:00"
+      "last_collection_time": "2026-06-22T07:13:26+00:00"
     },
     {
-      "source": "Mock Earnings Revision",
-      "attempted": 10,
-      "succeeded": 10,
+      "source": "Investing.com Technical Analysis",
+      "attempted": 1,
+      "succeeded": 1,
       "failed": 0,
       "success_rate": 1.0,
-      "last_collection_time": "2026-06-21T14:38:15+00:00"
+      "last_collection_time": "2026-06-22T07:13:26+00:00"
     },
     {
-      "source": "Mock Technical Summary",
+      "source": "Random Baseline",
       "attempted": 10,
       "succeeded": 10,
       "failed": 0,
       "success_rate": 1.0,
-      "last_collection_time": "2026-06-21T14:38:15+00:00"
+      "last_collection_time": "2026-06-22T07:13:32+00:00"
     }
   ],
   "missing_tickers": [],

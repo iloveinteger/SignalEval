@@ -46,8 +46,13 @@ ZACKS_RANK_MAPPING = {
 SOURCE_ALIASES = {
     "investing": "investing",
     "investing.com": "investing",
+    "investing com": "investing",
     "investing technical summary": "investing",
     "investing.com technical summary": "investing",
+    "investing com technical summary": "investing",
+    "investing technical analysis": "investing",
+    "investing.com technical analysis": "investing",
+    "investing com technical analysis": "investing",
     "technical": "investing",
     "zacks": "zacks",
     "zacks rank": "zacks",

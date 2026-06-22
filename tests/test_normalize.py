@@ -71,6 +71,13 @@ def test_normalize_signal_accepts_source_aliases():
     assert result.score == 1
 
 
+def test_normalize_signal_accepts_investing_technical_analysis_alias():
+    result = normalize_signal("Investing.com Technical Analysis", "Buy")
+
+    assert result.normalized_signal == "Buy"
+    assert result.score == 1
+
+
 def test_unknown_source_raises_clear_error():
     with pytest.raises(UnknownSourceError):
         normalize_signal("made-up-source", "Buy")

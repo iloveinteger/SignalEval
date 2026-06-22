@@ -186,8 +186,8 @@ def render_home_page(leaderboard: dict[str, Any]) -> str:
         <section class="hero">
           <div>
             <p class="eyebrow">Signal League</p>
-            <h1>Who predicts better: chartists, analysts, or earnings-revision models?</h1>
-            <p class="lede">A public scoreboard for historical investment signals across the S&amp;P 500.</p>
+            <h1>Do Investing.com public signals outperform a random baseline?</h1>
+            <p class="lede">An offline MVP scoreboard comparing saved Investing.com samples against a deterministic control group.</p>
           </div>
           <div class="signal-strip" aria-hidden="true">
             <span></span><span></span><span></span><span></span><span></span>
@@ -217,7 +217,7 @@ def render_leaderboard_page(leaderboard: dict[str, Any]) -> str:
     body = [
         "<section>",
         "<h1>Leaderboard</h1>",
-        "<p>Default view is organized around 20D and 60D forward performance when those horizons are available.</p>",
+        "<p>Default view compares saved Investing.com sample sources and the random-baseline control group across 20D and 60D forward performance when those horizons are available.</p>",
         '<p><a class="button" href="stocks.html">Browse stock-level results</a></p>',
     ]
 
@@ -261,7 +261,7 @@ def render_stock_detail_page(stock: dict[str, Any]) -> str:
             ]
         ),
         "</section>",
-        "<section><h2>Latest Signals</h2>",
+        "<section><h2>Latest Signals</h2><p>Source labels indicate whether a row comes from an offline Investing.com sample, the control baseline, or a mock fixture.</p>",
     ]
 
     signals = stock.get("signals", [])
@@ -603,7 +603,7 @@ def _leaderboard_table(rows: list[dict[str, Any]], *, compact: bool) -> str:
         cells.append(
             "<tr>"
             f"<td>{_escape(row['category'])}</td>"
-            f"<td>{_escape(row['source'])}</td>"
+            f"<td>{_escape(_display_source(row['source']))}</td>"
             f"<td class=\"num {_value_class(row.get('return_20d'))}\">{_percent(row.get('return_20d'))}</td>"
             f"<td class=\"num {_value_class(row.get('return_60d'))}\">{_percent(row.get('return_60d'))}</td>"
             f"<td class=\"num {_value_class(row.get('spy_alpha_60d'))}\">{_percent(row.get('spy_alpha_60d'))}</td>"
@@ -678,7 +678,7 @@ def _stock_signals_table(signals: list[dict[str, Any]]) -> str:
             cells.append(
                 "<tr>"
                 f"<td>{_display(signal.get('date'))}</td>"
-                f"<td>{_display(signal.get('source'))}</td>"
+                f"<td>{_display_source(signal.get('source'))}</td>"
                 f"<td>{_display(signal.get('raw_signal'))}</td>"
                 f"<td>{_display(signal.get('normalized_signal'))}</td>"
                 f"<td class=\"num\">{_display(signal.get('score'))}</td>"
@@ -727,7 +727,7 @@ def _raw_metric_table(rows: list[dict[str, Any]]) -> str:
         cells.append(
             "<tr>"
             f"<td>{_escape(row['category'])}</td>"
-            f"<td>{_escape(row['source'])}</td>"
+            f"<td>{_escape(_display_source(row['source']))}</td>"
             f"<td class=\"num\">{row['horizon']}D</td>"
             f"<td class=\"num\">{_display(row['sample_size'])}</td>"
             f"<td class=\"num\">{_percent(row['hit_rate'])}</td>"
@@ -769,7 +769,7 @@ def _source_runs_table(rows: list[dict[str, Any]]) -> str:
     for row in rows:
         cells.append(
             "<tr>"
-            f"<td>{_escape(row['source'])}</td>"
+            f"<td>{_escape(_display_source(row['source']))}</td>"
             f"<td class=\"num\">{_display(row['attempted'])}</td>"
             f"<td class=\"num\">{_display(row['succeeded'])}</td>"
             f"<td class=\"num\">{_display(row['failed'])}</td>"
@@ -834,6 +834,19 @@ def _display(value: Any) -> str:
     if value is None or value == "":
         return "&mdash;"
     return _escape(str(value))
+
+
+def _display_source(source: Any) -> str:
+    if source is None:
+        return "—"
+    text = str(source).strip()
+    if text.startswith("Investing.com"):
+        return f"{text} (Sample)"
+    if text == "Random Baseline":
+        return f"{text} (Control)"
+    if text.startswith("Mock "):
+        return f"{text} (Mock)"
+    return text
 
 
 def _percent(value: Any) -> str:
