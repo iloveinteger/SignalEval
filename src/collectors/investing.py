@@ -573,6 +573,7 @@ def inspect_investing_financial_summary_file(
 def inspect_investing_financial_summary_html(
     html_text: str,
 ) -> InvestingFinancialSummaryInspection:
+    state = _extract_next_state(html_text)
     tokens = _visible_text_tokens(html_text)
     key_ratios_start = _find_section_start(
         tokens,
@@ -587,13 +588,31 @@ def inspect_investing_financial_summary_html(
 
     financial_fields: dict[str, str] = {}
     valuation_fields: dict[str, str] = {}
+    structured_financial_fields = _extract_financial_fields_from_state(state)
+    structured_valuation_fields = _extract_valuation_fields_from_state(state)
+    if structured_financial_fields:
+        financial_fields.update(structured_financial_fields)
+    if structured_valuation_fields:
+        valuation_fields.update(structured_valuation_fields)
     if key_ratios_start is not None:
-        financial_fields = _extract_key_ratios(tokens, key_ratios_start)
-        valuation_fields = _extract_valuation_fields(tokens, key_ratios_start)
+        financial_fields = {
+            **_extract_key_ratios(tokens, key_ratios_start),
+            **financial_fields,
+        }
+        valuation_fields = {
+            **_extract_valuation_fields(tokens, key_ratios_start),
+            **valuation_fields,
+        }
 
     analyst_fields: dict[str, str] = {}
+    structured_analyst_fields = _extract_analyst_fields_from_state(state)
+    if structured_analyst_fields:
+        analyst_fields.update(structured_analyst_fields)
     if analyst_start is not None:
-        analyst_fields = _extract_analyst_fields(tokens, analyst_start)
+        analyst_fields = {
+            **_extract_analyst_fields(tokens, analyst_start),
+            **analyst_fields,
+        }
     vote_counts = _analyst_vote_counts(analyst_fields)
     total_count = _analyst_total_count(analyst_fields, vote_counts)
     score_raw = _analyst_score_raw(vote_counts, total_count)
@@ -756,6 +775,86 @@ def _extract_analyst_fields(tokens: list[str], start: int) -> dict[str, str]:
             key = match.group(2).lower().replace(" ", "_") + "_ratings"
             fields[key] = token
 
+    return fields
+
+
+def _extract_financial_fields_from_state(state: dict[str, Any]) -> dict[str, str]:
+    indicators = (
+        _dict_or_empty(_dict_or_empty(state.get("dividendsStore")).get("ratios"))
+        .get("indicators")
+    )
+    indicators = indicators if isinstance(indicators, dict) else {}
+    fields: dict[str, str] = {}
+    direct_mappings = {
+        "pe_ratio": ("equityStore", "instrument", "fundamental", "ratio"),
+        "dividend_yield": ("equityStore", "instrument", "fundamental", "yield"),
+    }
+    for field_name, path in direct_mappings.items():
+        value = _nested_value(state, path)
+        if value is None:
+            continue
+        if field_name == "dividend_yield":
+            fields[field_name] = f"{float(value):.2f}%"
+        else:
+            fields[field_name] = _format_decimal_string(value)
+
+    indicator_mappings = {
+        "price_book": "price_to_book_mrq",
+        "debt_equity": "total_debt_to_equity_mrq",
+        "return_on_equity": "return_on_equity_ttm",
+        "ebitda": "enterprise_value_ebitda_ttm",
+    }
+    for field_name, indicator_key in indicator_mappings.items():
+        indicator = _dict_or_empty(indicators.get(indicator_key))
+        value = indicator.get("value")
+        if value is None and field_name == "ebitda":
+            value = _nested_value(state, ("financialSummaryStore", "summaryData", "ebitda"))
+        if value is None:
+            continue
+        fields[field_name] = _format_indicator_value(value, percent=bool(indicator.get("percent_indicator")))
+
+    # EBITDA is exposed in the saved sample HTML, but not in the inspected ratios payload.
+    # Keep a structured fallback for common fundamental blocks if Investing starts exposing it there.
+    if "ebitda" not in fields:
+        value = _nested_value(state, ("equityStore", "fundamental", "ebitda"))
+        if value is not None:
+            fields["ebitda"] = _format_large_number(value)
+
+    return fields
+
+
+def _extract_valuation_fields_from_state(state: dict[str, Any]) -> dict[str, str]:
+    fair_value = _dict_or_empty(_dict_or_empty(state.get("invproDataStore")).get("fairValueData"))
+    if not fair_value:
+        return {}
+    fields: dict[str, str] = {}
+    if fair_value.get("locked"):
+        fields["fair_value"] = "Unlock"
+        fields["fair_value_upside"] = "Unlock"
+        return fields
+
+    price = _dict_or_empty(fair_value.get("price")).get("mean")
+    upside = fair_value.get("upside")
+    if price is not None:
+        fields["fair_value"] = _format_decimal_string(price)
+    if upside is not None:
+        fields["fair_value_upside"] = _format_upside_string(upside)
+    return fields
+
+
+def _extract_analyst_fields_from_state(state: dict[str, Any]) -> dict[str, str]:
+    fair_value = _dict_or_empty(_dict_or_empty(state.get("invproDataStore")).get("fairValueData"))
+    analyst_target = _dict_or_empty(fair_value.get("analyst_target"))
+    values_range = _dict_or_empty(analyst_target.get("values_range"))
+    latest = _dict_or_empty(fair_value.get("market_data")).get("latest")
+
+    fields: dict[str, str] = {}
+    average = values_range.get("mean")
+    if average is not None:
+        fields["price_target_average"] = _format_decimal_string(average)
+        if latest is not None:
+            upside = ((float(average) / float(latest)) - 1.0) * 100
+            fields["price_target_upside"] = _format_upside_string(upside)
     return fields
 
 
@@ -1021,6 +1120,15 @@ def _dict_or_empty(value: Any) -> dict[str, Any]:
     return value if isinstance(value, dict) else {}
 
 
+def _nested_value(value: Any, path: tuple[str, ...]) -> Any:
+    current = value
+    for key in path:
+        if not isinstance(current, dict):
+            return None
+        current = current.get(key)
+    return current
+
+
 def _optional_str(value: Any) -> str | None:
     if value is None:
         return None
@@ -1049,6 +1157,35 @@ def _clean_text(value: str) -> str:
 
 def _is_unlocked_value(value: str) -> bool:
     return _clean_text(value).casefold() not in _LOCKED_VALUES
+
+
+def _format_indicator_value(value: Any, *, percent: bool) -> str:
+    if percent:
+        return f"{float(value):.2f}%"
+    return _format_decimal_string(value)
+
+
+def _format_decimal_string(value: Any) -> str:
+    numeric = float(value)
+    text = f"{numeric:.2f}"
+    return text.rstrip("0").rstrip(".") if "." in text else text
+
+
+def _format_upside_string(value: Any) -> str:
+    numeric = float(value)
+    sign = "+" if numeric >= 0 else ""
+    direction = "Upside" if numeric >= 0 else "Downside"
+    return f"({sign}{numeric:.2f}% {direction})"
+
+
+def _format_large_number(value: Any) -> str:
+    numeric = float(value)
+    abs_value = abs(numeric)
+    if abs_value >= 1_000_000_000:
+        return f"{numeric / 1_000_000_000:.2f}B"
+    if abs_value >= 1_000_000:
+        return f"{numeric / 1_000_000:.2f}M"
+    return _format_decimal_string(numeric)
 
 
 def _required_csv_value(

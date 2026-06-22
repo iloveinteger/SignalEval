@@ -1,10 +1,13 @@
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 from src.collectors.investing import (
     inspect_investing_financial_summary_file,
+    inspect_investing_financial_summary_html,
     parse_investing_technical_file,
+    parse_investing_technical_html,
 )
 
 SAMPLES_DIR = Path(__file__).resolve().parents[1] / "samples" / "investing"
@@ -50,6 +53,42 @@ def test_parse_investing_technical_also_exposes_daily_signal_from_saved_html():
     assert signal.timeframe_signals["Daily"] == "Neutral"
 
 
+def test_parse_investing_technical_prefers_next_data_when_present():
+    html_text = TECHNICAL_SAMPLE.read_text(encoding="utf-8", errors="ignore")
+    next_data = re.search(
+        r'(<script\s+id="__NEXT_DATA__"[^>]*>.*?</script>)',
+        html_text,
+        re.IGNORECASE | re.DOTALL,
+    )
+    title = re.search(
+        r"(<title[^>]*>.*?</title>)",
+        html_text,
+        re.IGNORECASE | re.DOTALL,
+    )
+    minimized_html = f"<html><head>{title.group(1)}{next_data.group(1)}</head><body></body></html>"
+
+    signal = parse_investing_technical_html(minimized_html)
+
+    assert signal.daily_signal == "Neutral"
+    assert signal.selected_signal == "Buy"
+    assert signal.timeframe_signals["Hourly"] == "Buy"
+
+
+def test_parse_investing_technical_falls_back_when_next_data_is_missing():
+    html_text = TECHNICAL_SAMPLE.read_text(encoding="utf-8", errors="ignore")
+    fallback_html = re.sub(
+        r'<script\s+id="__NEXT_DATA__"[^>]*>.*?</script>',
+        "",
+        html_text,
+        flags=re.IGNORECASE | re.DOTALL,
+    )
+
+    signal = parse_investing_technical_html(fallback_html)
+
+    assert signal.daily_signal == "Neutral"
+    assert signal.selected_signal == "Buy"
+
+
 def test_inspect_financial_summary_extracts_analyst_and_financial_fields():
     inspection = inspect_investing_financial_summary_file(FINANCIAL_SAMPLE)
 
@@ -77,6 +116,45 @@ def test_inspect_financial_summary_extracts_analyst_and_financial_fields():
         "dividend_yield": "0.36%",
         "ebitda": "144.75B",
     }
+
+
+def test_inspect_financial_summary_prefers_next_data_for_ratios_and_price_targets():
+    html_text = FINANCIAL_SAMPLE.read_text(encoding="utf-8", errors="ignore")
+    next_data = re.search(
+        r'(<script\s+id="__NEXT_DATA__"[^>]*>.*?</script>)',
+        html_text,
+        re.IGNORECASE | re.DOTALL,
+    )
+    title = re.search(
+        r"(<title[^>]*>.*?</title>)",
+        html_text,
+        re.IGNORECASE | re.DOTALL,
+    )
+    structured_html = (
+        f"<html><head>{title.group(1)}{next_data.group(1)}</head>"
+        "<body>"
+        "Analyst Ratings Overall Consensus Buy Ratings: 47 analysts "
+        "29 Buy 15 Hold 3 Sell Analysts 12-Month Price Target: "
+        "</body></html>"
+    )
+
+    inspection = inspect_investing_financial_summary_html(structured_html)
+
+    assert inspection.analyst_fields["price_target_average"] == "314.42"
+    assert inspection.analyst_fields["price_target_upside"] == "(+5.51% Upside)"
+    assert inspection.financial_fields["pe_ratio"] == "36.01"
+    assert inspection.financial_fields["price_book"] == "40.4"
+    assert inspection.financial_fields["debt_equity"] == "79.55%"
+    assert inspection.financial_fields["return_on_equity"] == "141.47%"
+    assert inspection.financial_fields["dividend_yield"] == "0.36%"
+
+
+def test_inspect_financial_summary_still_uses_visible_text_for_vote_counts():
+    inspection = inspect_investing_financial_summary_file(FINANCIAL_SAMPLE)
+
+    assert inspection.analyst_vote_counts == {"buy": 29, "hold": 15, "sell": 3}
+    assert inspection.analyst_total_count == 47
+    assert inspection.analyst_consensus_signal == "Buy"
 
 
 def test_inspect_financial_summary_detects_locked_valuation_fields():
