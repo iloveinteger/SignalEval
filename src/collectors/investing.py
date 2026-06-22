@@ -232,46 +232,45 @@ def collect_investing_browser_signals(
         )
 
     sync_playwright = _load_sync_playwright()
-    browser = None
-    context = None
     try:
         with sync_playwright() as playwright:
             browser = playwright.chromium.launch(headless=True)
-            context = browser.new_context(
-                user_agent=user_agent,
-                locale="en-US",
-                extra_http_headers={
-                    "Accept-Language": "en-US,en;q=0.9",
-                    "Cache-Control": "no-cache",
-                    "Pragma": "no-cache",
-                },
-            )
-            return _collect_investing_configured_signals(
-                conn,
-                live_tickers=live_tickers,
-                cache_dir=cache_dir,
-                signal_date=signal_date,
-                sleep_seconds=sleep_seconds,
-                fetch_label="browser",
-                fetch_html=lambda *, ticker, page_kind: _fetch_investing_browser_html_with_context(
-                    context,
-                    ticker=ticker,
-                    page_kind=page_kind,
-                    slug_map=slug_map,
-                    timeout_seconds=timeout_seconds,
-                    retries=retries,
-                    sleep_seconds=sleep_seconds,
-                ),
-            )
+            try:
+                context = browser.new_context(
+                    user_agent=user_agent,
+                    locale="en-US",
+                    extra_http_headers={
+                        "Accept-Language": "en-US,en;q=0.9",
+                        "Cache-Control": "no-cache",
+                        "Pragma": "no-cache",
+                    },
+                )
+                try:
+                    return _collect_investing_configured_signals(
+                        conn,
+                        live_tickers=live_tickers,
+                        cache_dir=cache_dir,
+                        signal_date=signal_date,
+                        sleep_seconds=sleep_seconds,
+                        fetch_label="browser",
+                        fetch_html=lambda *, ticker, page_kind: _fetch_investing_browser_html_with_context(
+                            context,
+                            ticker=ticker,
+                            page_kind=page_kind,
+                            slug_map=slug_map,
+                            timeout_seconds=timeout_seconds,
+                            retries=retries,
+                            sleep_seconds=sleep_seconds,
+                        ),
+                    )
+                finally:
+                    context.close()
+            finally:
+                browser.close()
     except InvestingFetchError:
         raise
     except Exception as exc:
         raise InvestingFetchError(f"Playwright browser mode failed: {exc}") from exc
-    finally:
-        if context is not None:
-            context.close()
-        if browser is not None:
-            browser.close()
 
 
 def collect_investing_sample_signals(
@@ -529,6 +528,11 @@ def _collect_investing_configured_signals(
                         page_kind,
                         ticker,
                         cache_file,
+                    )
+                    _assert_investing_page_not_blocked(
+                        html_text,
+                        ticker=ticker,
+                        page_kind=page_kind,
                     )
 
                     if page_kind == "technical" and resolved_signal_date is None:
@@ -856,6 +860,32 @@ def save_investing_live_html(
     output_path = cache_path / filename
     output_path.write_text(html_text, encoding="utf-8")
     return output_path
+
+
+def _assert_investing_page_not_blocked(
+    html_text: str,
+    *,
+    ticker: str,
+    page_kind: str,
+) -> None:
+    blocked_reason = _blocked_investing_page_reason(html_text)
+    if blocked_reason is None:
+        return
+    raise InvestingFetchError(
+        f"Blocked while fetching {page_kind} page for {ticker.upper()}: {blocked_reason}"
+    )
+
+
+def _blocked_investing_page_reason(html_text: str) -> str | None:
+    lowered = html_text.lower()
+    if "cf-challenge" in lowered or "cloudflare" in lowered:
+        if "just a moment" in lowered or "security verification" in lowered:
+            return "Cloudflare challenge page returned instead of Investing content"
+    if "<title>just a moment...</title>" in lowered:
+        return "Cloudflare challenge page returned instead of Investing content"
+    if "performing security verification" in lowered:
+        return "Security verification page returned instead of Investing content"
+    return None
 
 
 def _wait_for_investing_page_content(page: Any, *, timeout_ms: int) -> None:

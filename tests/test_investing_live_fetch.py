@@ -282,6 +282,51 @@ def test_collect_investing_browser_signals_stores_failure_rows(tmp_path):
     assert all("browser blocked by remote site" in row["error_message"] for row in rows)
 
 
+def test_collect_investing_browser_signals_detects_cloudflare_challenge_page(tmp_path):
+    db_path = tmp_path / "signal_league.sqlite"
+    cache_dir = tmp_path / "live-cache"
+    slug_path = _write_slug_config(tmp_path, ["AAPL"])
+    initialize_database(db_path)
+    challenge_html = (
+        "<html><head><title>Just a moment...</title></head>"
+        "<body>Performing security verification for Cloudflare</body></html>"
+    )
+
+    def fake_browser_fetch(*, ticker, page_kind):
+        if page_kind == "technical":
+            return TECHNICAL_SAMPLE.read_text(encoding="utf-8", errors="ignore")
+        return challenge_html
+
+    with connect(db_path) as conn:
+        sync_universe(conn)
+        seed_mock_prices(conn, periods=260)
+        result = collect_investing_browser_signals(
+            conn,
+            tickers=["AAPL"],
+            slugs_path=slug_path,
+            cache_dir=cache_dir,
+            sleep_seconds=0,
+            fetch_html=fake_browser_fetch,
+        )
+        rows = conn.execute(
+            """
+            SELECT source, success, error_message
+            FROM signals
+            ORDER BY source
+            """
+        ).fetchall()
+
+    assert result == {"attempted": 2, "succeeded": 1, "failed": 1, "stored": 1}
+    rows_by_source = {row["source"]: row for row in rows}
+    assert rows_by_source["Investing.com Technical Analysis"]["success"] == 1
+    assert rows_by_source["Investing.com Financial / Analyst Summary"]["success"] == 0
+    assert (
+        "Cloudflare challenge page returned instead of Investing content"
+        in rows_by_source["Investing.com Financial / Analyst Summary"]["error_message"]
+    )
+    assert (cache_dir / "AAPL" / LIVE_FINANCIAL_CACHE_FILENAME).exists()
+
+
 def _write_slug_config(tmp_path: Path, tickers: list[str]) -> Path:
     lines = ["ticker,technical_url,financial_url"]
     for ticker in tickers:
