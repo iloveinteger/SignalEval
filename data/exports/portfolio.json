@@ -1,57 +1,7 @@
 {
-  "generated_at": "2026-06-22T08:41:05+00:00",
+  "generated_at": "2026-06-22T23:50:25+00:00",
   "initial_nav": 100.0,
   "sources": [
-    {
-      "source": "Investing.com Financial / Analyst Summary",
-      "is_control": false,
-      "initial_nav": 100.0,
-      "latest_nav": 100.23161630253693,
-      "total_return": 0.002316163025369411,
-      "spy_latest_nav": 100.06416151096884,
-      "spy_total_return": 0.0006416151096884093,
-      "excess_return_vs_spy": 0.0016745479156810017,
-      "rebalance_days": 1,
-      "series": [
-        {
-          "signal_date": "2026-06-18",
-          "date": "2026-06-19",
-          "source": "Investing.com Financial / Analyst Summary",
-          "daily_return": 0.002316163025369411,
-          "nav": 100.23161630253693,
-          "spy_daily_return": 0.0006416151096884093,
-          "spy_nav": 100.06416151096884,
-          "cash_weight": 0.0,
-          "weights": {
-            "AAPL": 1.0
-          }
-        }
-      ]
-    },
-    {
-      "source": "Investing.com Technical Analysis",
-      "is_control": false,
-      "initial_nav": 100.0,
-      "latest_nav": 100.0,
-      "total_return": 0.0,
-      "spy_latest_nav": 100.06416151096884,
-      "spy_total_return": 0.0006416151096884093,
-      "excess_return_vs_spy": -0.0006416151096884093,
-      "rebalance_days": 1,
-      "series": [
-        {
-          "signal_date": "2026-06-18",
-          "date": "2026-06-19",
-          "source": "Investing.com Technical Analysis",
-          "daily_return": 0.0,
-          "nav": 100.0,
-          "spy_daily_return": 0.0006416151096884093,
-          "spy_nav": 100.06416151096884,
-          "cash_weight": 1.0,
-          "weights": {}
-        }
-      ]
-    },
     {
       "source": "Mock Analyst Consensus",
       "is_control": false,
@@ -139,33 +89,6 @@
             "JPM": 0.14285714285714285,
             "MSFT": 0.14285714285714285,
             "NVDA": 0.2857142857142857
-          }
-        }
-      ]
-    },
-    {
-      "source": "Random Baseline",
-      "is_control": true,
-      "initial_nav": 100.0,
-      "latest_nav": 100.1546598701085,
-      "total_return": 0.001546598701084978,
-      "spy_latest_nav": 100.06416151096884,
-      "spy_total_return": 0.0006416151096884093,
-      "excess_return_vs_spy": 0.0009049835913965687,
-      "rebalance_days": 1,
-      "series": [
-        {
-          "signal_date": "2026-06-18",
-          "date": "2026-06-19",
-          "source": "Random Baseline",
-          "daily_return": 0.001546598701084867,
-          "nav": 100.1546598701085,
-          "spy_daily_return": 0.0006416151096884093,
-          "spy_nav": 100.06416151096884,
-          "cash_weight": 0.0,
-          "weights": {
-            "AMZN": 0.5,
-            "MSFT": 0.5
           }
         }
       ]

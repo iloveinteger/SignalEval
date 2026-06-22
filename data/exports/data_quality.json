@@ -1,38 +1,22 @@
 {
-  "generated_at": "2026-06-22T08:41:05+00:00",
-  "last_collection_time": "2026-06-22T08:41:02+00:00",
+  "generated_at": "2026-06-22T23:50:25+00:00",
+  "last_collection_time": "2026-06-22T23:50:25+00:00",
   "stocks_count": 10,
   "active_stocks_count": 10,
-  "signals_collected": 45,
-  "failed_signal_count": 17,
-  "prices_collected": 5720,
-  "forward_returns_count": 225,
-  "latest_signal_date": "2026-06-22",
-  "latest_price_date": "2026-12-31",
+  "signals_collected": 30,
+  "failed_signal_count": 0,
+  "prices_collected": 2860,
+  "forward_returns_count": 150,
+  "latest_signal_date": "2026-01-02",
+  "latest_price_date": "2026-07-02",
   "source_runs": [
-    {
-      "source": "Investing.com Financial / Analyst Summary",
-      "attempted": 12,
-      "succeeded": 2,
-      "failed": 10,
-      "success_rate": 0.16666666666666666,
-      "last_collection_time": "2026-06-22T08:41:02+00:00"
-    },
-    {
-      "source": "Investing.com Technical Analysis",
-      "attempted": 12,
-      "succeeded": 5,
-      "failed": 7,
-      "success_rate": 0.4166666666666667,
-      "last_collection_time": "2026-06-22T08:41:02+00:00"
-    },
     {
       "source": "Mock Analyst Consensus",
       "attempted": 10,
       "succeeded": 10,
       "failed": 0,
       "success_rate": 1.0,
-      "last_collection_time": "2026-06-21T14:30:15+00:00"
+      "last_collection_time": "2026-06-22T23:50:25+00:00"
     },
     {
       "source": "Mock Earnings Revision",
@@ -40,7 +24,7 @@
       "succeeded": 10,
       "failed": 0,
       "success_rate": 1.0,
-      "last_collection_time": "2026-06-21T14:30:15+00:00"
+      "last_collection_time": "2026-06-22T23:50:25+00:00"
     },
     {
       "source": "Mock Technical Summary",
@@ -48,120 +32,9 @@
       "succeeded": 10,
       "failed": 0,
       "success_rate": 1.0,
-      "last_collection_time": "2026-06-21T14:30:15+00:00"
-    },
-    {
-      "source": "Random Baseline",
-      "attempted": 20,
-      "succeeded": 20,
-      "failed": 0,
-      "success_rate": 1.0,
-      "last_collection_time": "2026-06-22T08:41:02+00:00"
+      "last_collection_time": "2026-06-22T23:50:25+00:00"
     }
   ],
   "missing_tickers": [],
-  "failed_tickers": [
-    {
-      "date": "2026-06-22",
-      "ticker": "AAPL",
-      "source": "Investing.com Financial / Analyst Summary",
-      "error_message": "Failed to fetch Investing financial page for AAPL"
-    },
-    {
-      "date": "2026-06-22",
-      "ticker": "AAPL",
-      "source": "Investing.com Technical Analysis",
-      "error_message": "Failed to fetch Investing technical page for AAPL"
-    },
-    {
-      "date": "2026-06-22",
-      "ticker": "GOOGL",
-      "source": "Investing.com Financial / Analyst Summary",
-      "error_message": "Failed to fetch Investing financial page for GOOGL"
-    },
-    {
-      "date": "2026-06-22",
-      "ticker": "GOOGL",
-      "source": "Investing.com Technical Analysis",
-      "error_message": "Failed to fetch Investing technical page for GOOGL"
-    },
-    {
-      "date": "2026-06-22",
-      "ticker": "JPM",
-      "source": "Investing.com Financial / Analyst Summary",
-      "error_message": "Failed to fetch Investing financial page for JPM"
-    },
-    {
-      "date": "2026-06-22",
-      "ticker": "JPM",
-      "source": "Investing.com Technical Analysis",
-      "error_message": "Failed to fetch Investing technical page for JPM"
-    },
-    {
-      "date": "2026-06-22",
-      "ticker": "META",
-      "source": "Investing.com Financial / Analyst Summary",
-      "error_message": "Failed to fetch Investing financial page for META"
-    },
-    {
-      "date": "2026-06-22",
-      "ticker": "META",
-      "source": "Investing.com Technical Analysis",
-      "error_message": "Failed to fetch Investing technical page for META"
-    },
-    {
-      "date": "2026-06-22",
-      "ticker": "MSFT",
-      "source": "Investing.com Financial / Analyst Summary",
-      "error_message": "Failed to fetch Investing financial page for MSFT"
-    },
-    {
-      "date": "2026-06-22",
-      "ticker": "MSFT",
-      "source": "Investing.com Technical Analysis",
-      "error_message": "Failed to fetch Investing technical page for MSFT"
-    },
-    {
-      "date": "2026-06-22",
-      "ticker": "NVDA",
-      "source": "Investing.com Financial / Analyst Summary",
-      "error_message": "Investing analyst consensus signal was not found"
-    },
-    {
-      "date": "2026-06-22",
-      "ticker": "NVDA",
-      "source": "Investing.com Technical Analysis",
-      "error_message": "Failed to fetch Investing technical page for NVDA"
-    },
-    {
-      "date": "2026-06-22",
-      "ticker": "UNH",
-      "source": "Investing.com Financial / Analyst Summary",
-      "error_message": "Failed to fetch Investing financial page for UNH"
-    },
-    {
-      "date": "2026-06-22",
-      "ticker": "UNH",
-      "source": "Investing.com Technical Analysis",
-      "error_message": "Failed to fetch Investing technical page for UNH"
-    },
-    {
-      "date": "2026-06-18",
-      "ticker": "AMZN",
-      "source": "Investing.com Financial / Analyst Summary",
-      "error_message": "Investing analyst consensus signal was not found"
-    },
-    {
-      "date": "2026-06-18",
-      "ticker": "TSLA",
-      "source": "Investing.com Financial / Analyst Summary",
-      "error_message": "Failed to fetch Investing financial page for TSLA"
-    },
-    {
-      "date": "2026-06-18",
-      "ticker": "XOM",
-      "source": "Investing.com Financial / Analyst Summary",
-      "error_message": "Failed to fetch Investing financial page for XOM"
-    }
-  ]
+  "failed_tickers": []
 }
