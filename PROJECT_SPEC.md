@@ -1,66 +1,69 @@
-Below is a **Codex-ready project brief + TODO** you can paste into your repo as `PROJECT_SPEC.md`.
-
----
-
-# Signal League
+# Signal League Project Spec
 
 ## Project Summary
 
 Signal League is a public investment signal performance tracker.
 
-Most finance websites show current ratings such as **Buy**, **Sell**, **Strong Buy**, or **Hold**. Signal League asks a different question:
+Most finance websites show current ratings such as Buy, Sell, Strong Buy, or
+Hold. Signal League asks whether those public signals were actually useful
+after the fact.
 
-> Were those signals actually right?
+The MVP is intentionally narrow:
 
-Every trading day, Signal League records public stock signals across the S&P 500 from multiple signal categories:
+```text
+Do Investing.com public signals outperform a random baseline?
+```
 
-* Technical analysis
-* Analyst consensus
-* Earnings-revision models
+This is not a stock recommendation service. It is a scoreboard for historical
+public signals.
 
-As time passes, each signal is evaluated against future stock returns, SPY-adjusted alpha, and sector-adjusted alpha.
+## MVP Scope
 
-This is **not** a stock recommendation service.
-It is a scoreboard for forecasters.
+### Universe
 
----
-
-# Core Question
-
-> Who predicts better: chartists, analysts, or earnings-revision models?
-
----
-
-# MVP Scope
-
-## Universe
-
-Track all S&P 500 companies.
-
-Each stock should include:
-
-* ticker
-* company name
-* sector
-* industry
-* active status
-
-The initial universe can be stored in:
+Track S&P 500 companies from:
 
 ```text
 config/sp500.csv
 ```
 
----
+Each stock should include:
 
-# Initial Signal Sources
+- ticker
+- company name
+- sector
+- industry
+- active status
 
-## 1. Technical Analysis
+### MVP Signal Sources
+
+The MVP has three signal sources.
+
+1. Investing.com Technical Analysis
+2. Investing.com Financial / Analyst Summary
+3. Random Baseline control group
+
+Yahoo Finance analyst consensus and Zacks Rank are future extensions, not MVP
+sources.
+
+## Core MVP Question
+
+```text
+Do Investing.com public signals outperform a random baseline?
+```
+
+The random baseline is a control group. Its purpose is to show whether the
+Investing.com signals add value beyond random directional labels over the same
+universe, dates, and evaluation horizons.
+
+## MVP Source Details
+
+### 1. Investing.com Technical Analysis
 
 Source:
 
 ```text
-Investing.com Technical Summary
+Investing.com Technical Analysis
 ```
 
 Category:
@@ -68,6 +71,20 @@ Category:
 ```text
 technical
 ```
+
+Current parser status:
+
+- Parses saved Investing.com HTML offline.
+- Extracts the selected overall technical signal.
+- Extracts the daily technical signal separately.
+- Does not make live HTTP requests yet.
+- Does not replace mock collectors yet.
+
+Known sample behavior:
+
+- The saved AAPL technical page exposes a selected overall signal of Buy for
+  the selected timeframe.
+- The same page exposes a daily signal of Neutral.
 
 Normalized signal scale:
 
@@ -79,81 +96,118 @@ Buy         = 1
 Strong Buy  = 2
 ```
 
----
-
-## 2. Earnings Revision
+### 2. Investing.com Financial / Analyst Summary
 
 Source:
 
 ```text
-Zacks Rank
+Investing.com Financial / Analyst Summary
 ```
 
-Category:
+Primary MVP fields currently extractable from saved HTML:
+
+- analyst consensus
+- analyst count
+- analyst rating bucket counts when present
+- price target average
+- price target upside
+- financial ratios
+
+Financial ratios currently extracted from the saved sample include:
+
+- P/E ratio
+- Price/Book
+- Debt / Equity
+- Return on Equity
+- Dividend Yield
+- EBITDA
+
+Valuation fields:
+
+- Fair Value and Fair Value Upside may appear in the page.
+- These fields may be locked or unavailable.
+- Locked valuation fields should not be treated as reliable score-bearing
+  signals.
+
+Initial score-bearing field:
 
 ```text
-earnings_revision
+overall analyst consensus
 ```
 
-Normalized signal scale:
-
-```text
-#5 Strong Sell = -2
-#4 Sell        = -1
-#3 Hold        = 0
-#2 Buy         = 1
-#1 Strong Buy  = 2
-```
-
----
-
-## 3. Analyst Consensus
-
-Source:
-
-```text
-Yahoo Finance Analyst Recommendation
-```
-
-Category:
-
-```text
-analyst_consensus
-```
-
-Normalized signal scale:
+Suggested normalized analyst scale:
 
 ```text
 Strong Sell = -2
 Sell        = -1
 Hold        = 0
+Neutral     = 0
 Buy         = 1
 Strong Buy  = 2
 ```
 
----
+Financial ratios should initially be stored as supporting fields or source
+metadata unless a specific ratio-to-score rule is defined and tested.
 
-# Core Data Pipeline
+### 3. Random Baseline Control Group
 
-Every trading day:
+Source:
+
+```text
+Random Baseline
+```
+
+Category:
+
+```text
+random_baseline
+```
+
+Purpose:
+
+- Generate random labels over the same ticker/date universe as the public
+  signals.
+- Provide a control group for the MVP question.
+- Make it clear whether observed Investing.com performance is meaningfully
+  different from random labels.
+
+Recommended baseline labels:
+
+```text
+Strong Sell = -2
+Sell        = -1
+Neutral     = 0
+Buy         = 1
+Strong Buy  = 2
+```
+
+The baseline generator should be deterministic for reproducible tests and
+leaderboards, for example by seeding from source name, ticker, and date.
+
+## Core Data Pipeline
+
+Every run:
 
 ```text
 1. Load S&P 500 universe
 2. Fetch latest adjusted close prices
-3. Collect Investing technical signals
-4. Collect Zacks Rank signals
-5. Collect Yahoo analyst consensus signals
-6. Normalize all signals to score -2 to +2
+3. Collect Investing.com technical signals
+4. Collect Investing.com financial / analyst summary signals
+5. Generate random baseline signals for the same scope
+6. Normalize score-bearing signals to -2 through +2
 7. Store signals with price_at_signal
 8. Compute available forward returns for older signals
-9. Generate leaderboard data
-10. Build static website
-11. Commit updated data/site to GitHub
+9. Compare Investing.com sources against the random baseline
+10. Generate leaderboard and data-quality exports
+11. Build static website
 ```
 
----
+Live Investing.com HTTP collection is not part of the current parser milestone.
+The first Investing.com parser is offline and sample-backed.
 
-# Repository Structure
+## Repository Structure
+
+Current and intended MVP structure:
 
 ```text
 signal-league/
@@ -163,72 +217,61 @@ signal-league/
 
   config/
     sp500.csv
-    sources.yaml
 
   data/
     signal_league.sqlite
     exports/
       leaderboard.json
-      source_reports.json
       data_quality.json
+
+  samples/
+    investing/
+      AAPL Technical Analysis, RSI and Moving Averages - Investing.com.html
+      NASDAQ_AAPL Financials _ Apple - Investing.com.html
 
   src/
     collectors/
       investing.py
-      zacks.py
+      mock.py
       yahoo.py
 
     prices/
       yahoo_prices.py
+      mock_prices.py
 
     analysis/
       returns.py
       leaderboard.py
-      balanced.py
-      conflicts.py
 
     site/
       build_static.py
-      templates/
 
     utils/
       db.py
       universe.py
       normalize.py
       logging.py
-      dates.py
+      benchmarks.py
 
   scripts/
     init_db.py
-    collect_daily.py
+    collect_prices.py
+    collect_signals.py
+    collect_mock_signals.py
     compute_returns.py
     build_site.py
 
   tests/
-    test_normalize.py
-    test_returns.py
-    test_db.py
-
-  docs/
-    index.html
-    leaderboard.html
-    source.html
-    sectors.html
-    conflicts.html
-    data-quality.html
-
-  .github/
-    workflows/
-      daily.yml
 ```
 
----
+`src/collectors/investing.py` should remain an offline parser until live
+collection is explicitly added.
 
-# Database Schema
+## Database Schema
 
 Use SQLite for MVP.
 
-## stocks
+### stocks
 
 ```sql
 CREATE TABLE IF NOT EXISTS stocks (
@@ -240,7 +283,7 @@ CREATE TABLE IF NOT EXISTS stocks (
 );
 ```
 
-## signals
+### signals
 
 ```sql
 CREATE TABLE IF NOT EXISTS signals (
@@ -260,7 +303,7 @@ CREATE TABLE IF NOT EXISTS signals (
 );
 ```
 
-## prices
+### prices
 
 ```sql
 CREATE TABLE IF NOT EXISTS prices (
@@ -271,7 +314,7 @@ CREATE TABLE IF NOT EXISTS prices (
 );
 ```
 
-## forward_returns
+### forward_returns
 
 ```sql
 CREATE TABLE IF NOT EXISTS forward_returns (
@@ -286,7 +329,7 @@ CREATE TABLE IF NOT EXISTS forward_returns (
 );
 ```
 
-## collection_runs
+### collection_runs
 
 ```sql
 CREATE TABLE IF NOT EXISTS collection_runs (
@@ -301,9 +344,7 @@ CREATE TABLE IF NOT EXISTS collection_runs (
 );
 ```
 
----
-
-# Evaluation Horizons
+## Evaluation Horizons
 
 Calculate forward returns for:
 
@@ -317,9 +358,7 @@ Calculate forward returns for:
 
 Use trading days, not calendar days.
 
----
-
-# Main Metrics
+## Main Metrics
 
 For each source, signal, category, sector, and horizon:
 
@@ -350,17 +389,15 @@ long_short_spread = average_return(score=2) - average_return(score=-2)
 sharpe_like_score = average_return / standard_deviation
 ```
 
----
-
-# Bias Control
+## Bias Control
 
 The site should show two modes.
 
-## Raw Mode
+### Raw Mode
 
 Simple average across all collected S&P 500 signals.
 
-## Balanced Mode
+### Balanced Mode
 
 Sector-neutral result.
 
@@ -374,9 +411,7 @@ Calculation:
 
 This prevents Technology or mega-cap stocks from dominating the results.
 
----
-
-# Sector Benchmarks
+## Sector Benchmarks
 
 Use these ETF mappings for sector alpha:
 
@@ -400,29 +435,26 @@ Also always track:
 SPY
 ```
 
----
+## Static Site Pages
 
-# Static Site Pages
-
-## Home
+### Home
 
 Purpose:
 
 ```text
 Explain the project.
 Show latest top-level leaderboard.
+Show whether Investing.com sources are outperforming the random baseline.
 Show last updated date.
 ```
 
 Headline:
 
 ```text
-Who predicts better: chartists, analysts, or earnings-revision models?
+Do Investing.com public signals outperform a random baseline?
 ```
 
----
-
-## Leaderboard
+### Leaderboard
 
 Show:
 
@@ -435,24 +467,23 @@ Source
 60D sector alpha
 Hit rate
 Sample size
+Random baseline comparison
 ```
 
 Default sorting:
 
 ```text
-60D sector-neutral SPY alpha
+60D SPY alpha versus random baseline
 ```
 
----
+### Source Report
 
-## Source Report
-
-For each source:
+For each MVP source:
 
 ```text
-Investing Technical Summary
-Zacks Rank
-Yahoo Analyst Consensus
+Investing.com Technical Analysis
+Investing.com Financial / Analyst Summary
+Random Baseline
 ```
 
 Show performance by signal:
@@ -465,37 +496,31 @@ Sell
 Strong Sell
 ```
 
----
-
-## Sector View
+### Sector View
 
 Show performance by sector.
 
 Key question:
 
 ```text
-Does a signal work across sectors, or only in specific sectors?
+Does the Investing.com edge, if any, persist across sectors?
 ```
 
----
+### Signal Conflicts
 
-## Signal Conflicts
-
-Track cases where sources disagree.
+Track cases where MVP sources disagree.
 
 Examples:
 
 ```text
 Technical Buy + Analyst Sell
-Zacks Strong Buy + Technical Strong Sell
-Analyst Buy + Zacks Sell
+Technical Strong Sell + Analyst Buy
+Investing.com Buy + Random Baseline Sell
 ```
 
 Show which source was more correct after 20D, 60D, and 120D.
 
----
-
-## Data Quality
+### Data Quality
 
 Show:
 
@@ -506,332 +531,168 @@ missing tickers
 failed tickers
 number of signals collected
 number of prices collected
+locked or unavailable valuation fields
 ```
 
 This page is important because data quality is part of the product.
 
----
-
-# GitHub Actions Workflow
-
-Run once per US trading day after market close.
-
-File:
-
-```text
-.github/workflows/daily.yml
-```
-
-Workflow:
-
-```yaml
-name: Daily Signal Collection
-
-on:
-  schedule:
-    - cron: "30 22 * * 1-5"
-  workflow_dispatch:
-
-jobs:
-  collect:
-    runs-on: ubuntu-latest
-
-    permissions:
-      contents: write
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-
-      - name: Install dependencies
-        run: pip install -r requirements.txt
-
-      - name: Initialize database
-        run: python scripts/init_db.py
-
-      - name: Collect daily signals
-        run: python scripts/collect_daily.py
-
-      - name: Compute returns
-        run: python scripts/compute_returns.py
-
-      - name: Build static site
-        run: python scripts/build_site.py
-
-      - name: Commit updates
-        run: |
-          git config user.name "signal-league-bot"
-          git config user.email "bot@example.com"
-          git add data/ docs/
-          git commit -m "Daily signal update" || echo "No changes"
-          git push
-```
-
----
-
-# Implementation TODO
-
-## Phase 0 — Repo Setup
-
-* [ ] Create GitHub repo
-* [ ] Add `README.md`
-* [ ] Add `PROJECT_SPEC.md`
-* [ ] Add Python project structure
-* [ ] Add `requirements.txt`
-* [ ] Add `.gitignore`
-* [ ] Add `config/sp500.csv`
-* [ ] Add basic logging utility
-
----
-
-## Phase 1 — Database
-
-* [ ] Implement `src/utils/db.py`
-* [ ] Implement `scripts/init_db.py`
-* [ ] Create SQLite schema
-* [ ] Add insert/upsert helpers for stocks
-* [ ] Add insert/upsert helpers for prices
-* [ ] Add insert/upsert helpers for signals
-* [ ] Add collection run tracking
-* [ ] Add tests for DB writes
-
----
-
-## Phase 2 — Universe
-
-* [ ] Implement `src/utils/universe.py`
-* [ ] Load S&P 500 CSV
-* [ ] Validate required columns
-* [ ] Insert stocks into database
-* [ ] Add active/inactive flag support
-* [ ] Add tests for universe loading
-
----
-
-## Phase 3 — Normalization
-
-* [ ] Implement `src/utils/normalize.py`
-* [ ] Normalize Investing signals
-* [ ] Normalize Zacks Rank signals
-* [ ] Normalize Yahoo analyst consensus
-* [ ] Convert all signals to score `-2` to `2`
-* [ ] Add tests for all signal mappings
-
----
-
-## Phase 4 — Price Data
-
-* [ ] Implement `src/prices/yahoo_prices.py`
-* [ ] Fetch adjusted close for S&P 500 tickers
-* [ ] Fetch adjusted close for SPY
-* [ ] Fetch adjusted close for sector ETFs
-* [ ] Store prices in SQLite
-* [ ] Handle missing prices
-* [ ] Add retry logic
-* [ ] Add tests for return calculation using mock prices
-
----
-
-## Phase 5 — Collectors
-
-Start with 10 tickers:
-
-```text
-AAPL
-MSFT
-NVDA
-AMZN
-GOOGL
-META
-TSLA
-JPM
-XOM
-UNH
-```
-
-### Investing Collector
-
-* [ ] Implement `src/collectors/investing.py`
-* [ ] Fetch technical summary for one ticker
-* [ ] Parse raw signal
-* [ ] Normalize signal
-* [ ] Return structured result
-* [ ] Handle request failure
-* [ ] Handle missing signal
-* [ ] Test on 10 tickers
-
-### Zacks Collector
-
-* [ ] Implement `src/collectors/zacks.py`
-* [ ] Fetch Zacks Rank for one ticker
-* [ ] Parse rank
-* [ ] Normalize rank
-* [ ] Return structured result
-* [ ] Handle request failure
-* [ ] Handle missing rank
-* [ ] Test on 10 tickers
-
-### Yahoo Analyst Collector
-
-* [ ] Implement `src/collectors/yahoo.py`
-* [ ] Fetch analyst recommendation for one ticker
-* [ ] Parse consensus recommendation
-* [ ] Normalize recommendation
-* [ ] Return structured result
-* [ ] Handle missing analyst data
-* [ ] Test on 10 tickers
-
----
-
-## Phase 6 — Daily Collection Script
-
-* [ ] Implement `scripts/collect_daily.py`
-* [ ] Load universe
-* [ ] Fetch prices
-* [ ] Run all collectors
-* [ ] Store successful signals
-* [ ] Store failures with error messages
-* [ ] Record collection run stats
-* [ ] Add CLI option: `--limit 10`
-* [ ] Add CLI option: `--source investing`
-* [ ] Add CLI option: `--date YYYY-MM-DD`
-
----
-
-## Phase 7 — Forward Return Engine
-
-* [ ] Implement `src/analysis/returns.py`
-* [ ] Calculate 1D forward return
-* [ ] Calculate 5D forward return
-* [ ] Calculate 20D forward return
-* [ ] Calculate 60D forward return
-* [ ] Calculate 120D forward return
-* [ ] Calculate SPY alpha
-* [ ] Calculate sector ETF alpha
-* [ ] Skip signals without enough future data
-* [ ] Store results in `forward_returns`
-* [ ] Add tests using fixture price data
-
----
-
-## Phase 8 — Leaderboard
-
-* [ ] Implement `src/analysis/leaderboard.py`
-* [ ] Aggregate by source
-* [ ] Aggregate by category
-* [ ] Aggregate by signal score
-* [ ] Compute hit rate
-* [ ] Compute average return
-* [ ] Compute median return
-* [ ] Compute average alpha
-* [ ] Compute sample size
-* [ ] Export `data/exports/leaderboard.json`
-
----
-
-## Phase 9 — Balanced Mode
-
-* [ ] Implement `src/analysis/balanced.py`
-* [ ] Aggregate returns by sector first
-* [ ] Equal-weight sector results
-* [ ] Exclude sectors below minimum sample size
-* [ ] Export raw and balanced results separately
-* [ ] Add balanced leaderboard JSON
-
----
-
-## Phase 10 — Conflict Analysis
-
-* [ ] Implement `src/analysis/conflicts.py`
-* [ ] Identify same-day ticker signals from multiple sources
-* [ ] Find source disagreements
-* [ ] Define conflict types
-* [ ] Compute which source was directionally correct
-* [ ] Export conflict results JSON
-
----
-
-## Phase 11 — Static Site
-
-* [ ] Implement `src/site/build_static.py`
-* [ ] Generate `docs/index.html`
-* [ ] Generate `docs/leaderboard.html`
-* [ ] Generate `docs/source.html`
-* [ ] Generate `docs/sectors.html`
-* [ ] Generate `docs/conflicts.html`
-* [ ] Generate `docs/data-quality.html`
-* [ ] Use simple HTML/CSS first
-* [ ] Add table sorting later
-* [ ] Add charts later
-
----
-
-## Phase 12 — GitHub Actions
-
-* [ ] Add `.github/workflows/daily.yml`
-* [ ] Run pipeline manually with `workflow_dispatch`
-* [ ] Confirm DB updates are committed
-* [ ] Confirm `docs/` updates are committed
-* [ ] Enable GitHub Pages from `docs/`
-* [ ] Add failure logging
-* [ ] Add collection success rate to site
-
----
-
-# MVP Acceptance Criteria
+## Implementation TODO
+
+### Phase 1 - Foundation
+
+- [x] Add Python project structure
+- [x] Add SQLite schema initialization
+- [x] Add S&P 500 universe loading
+- [x] Add signal normalization utilities
+- [x] Add focused pytest coverage
+
+### Phase 2 - Price Data
+
+- [x] Add mock prices for deterministic local tests
+- [x] Add Yahoo-compatible adjusted close price collection
+- [x] Store prices in SQLite
+- [x] Add retry handling and logging
+
+### Phase 3 - Mock Pipeline
+
+- [x] Add mock signal collectors
+- [x] Store mock signals and collection run stats
+- [x] Compute forward returns
+- [x] Build static site output
+
+Mock collectors remain in place until real MVP sources are intentionally wired
+into collection.
+
+### Phase 4 - Investing.com Offline Parsers
+
+- [x] Add offline parser for saved Investing.com technical HTML
+- [x] Extract selected overall technical signal
+- [x] Extract daily technical signal
+- [x] Add tests using exact saved technical sample filename
+- [x] Inspect saved financial / analyst summary HTML
+- [x] Extract analyst consensus, analyst count, price target average, upside,
+      and financial ratios
+- [x] Detect locked or unavailable valuation fields
+- [x] Add tests using exact saved financial sample filename
+- [ ] Convert parser outputs into database-ready signal objects
+- [ ] Keep parser tests offline and fixture-backed
+
+### Phase 5 - Random Baseline
+
+- [ ] Implement deterministic random baseline generator
+- [ ] Generate labels over the same ticker/date scope as MVP sources
+- [ ] Store baseline signals with source `Random Baseline`
+- [ ] Add tests for deterministic generation
+
+### Phase 6 - MVP Collector Wiring
+
+- [ ] Add live Investing.com collection only after parser behavior is stable
+- [ ] Respect rate limits and request failure handling
+- [ ] Store successful Investing.com technical signals
+- [ ] Store successful Investing.com analyst consensus signals
+- [ ] Store failures with error messages
+- [ ] Record collection run stats
+- [ ] Do not replace mock collectors until the MVP path is verified
+
+### Phase 7 - Leaderboard and Baseline Comparison
+
+- [ ] Compare each Investing.com source against Random Baseline
+- [ ] Add source-level baseline deltas
+- [ ] Add signal-level baseline deltas
+- [ ] Export leaderboard JSON
+- [ ] Surface baseline comparison on the static site
+
+### Phase 8 - Balanced Mode
+
+- [ ] Aggregate returns by sector first
+- [ ] Equal-weight sector results
+- [ ] Exclude sectors below minimum sample size
+- [ ] Export raw and balanced results separately
+
+### Phase 9 - GitHub Actions and Publishing
+
+- [ ] Run pipeline manually with `workflow_dispatch`
+- [ ] Confirm DB updates are committed
+- [ ] Confirm `docs/` updates are committed
+- [ ] Enable GitHub Pages from `docs/`
+- [ ] Add failure logging
+- [ ] Add collection success rate to site
+
+## MVP Acceptance Criteria
 
 The MVP is complete when:
 
 ```text
 1. S&P 500 universe loads successfully
-2. Prices are stored daily
-3. At least one signal source works for 80%+ of S&P 500 tickers
-4. Signals are stored with date, ticker, source, score, and price
-5. Forward returns are calculated for available horizons
-6. Leaderboard JSON is generated
-7. Static website is built
-8. GitHub Actions runs the full pipeline
-9. GitHub Pages displays the latest results
+2. Prices are stored for required tickers and benchmarks
+3. Investing.com technical signals are collected or parsed reliably
+4. Investing.com analyst summary signals are collected or parsed reliably
+5. Random baseline signals are generated for the same scope
+6. Score-bearing signals are stored with date, ticker, source, score, and price
+7. Forward returns are calculated for available horizons
+8. Leaderboard JSON compares Investing.com sources against the random baseline
+9. Static website displays the latest baseline comparison
 ```
 
----
+## Future Extensions
 
-# Important Implementation Notes
+These are explicitly out of MVP scope:
 
-## Do not optimize too early
+### Yahoo Finance Analyst Consensus
 
-First priority:
+- Fetch analyst recommendation from Yahoo Finance.
+- Normalize recommendation labels to the common score scale.
+- Compare against Investing.com analyst consensus after the MVP is stable.
 
-```text
-collect reliably
-store cleanly
-evaluate correctly
-```
+### Zacks Rank
 
-UI comes later.
+- Fetch Zacks Rank.
+- Normalize `#1 Strong Buy` through `#5 Strong Sell`.
+- Add as an earnings-revision source after the MVP is stable.
 
-## Store raw signals
+### Additional Extensions
+
+- More signal sources
+- More robust valuation models
+- Conflict analysis across multiple non-baseline sources
+- Charts and richer static-site interactivity
+
+## Important Implementation Notes
+
+### Keep the MVP honest
+
+The first public question is not "which finance site is best." The first public
+question is whether Investing.com public signals outperform a random baseline.
+
+### Store raw signals
 
 Always store the raw signal before normalization.
 
 Example:
 
 ```text
-raw_signal = "#1 Strong Buy"
-normalized_signal = "Strong Buy"
-score = 2
+raw_signal = "Buy"
+normalized_signal = "Buy"
+score = 1
 ```
 
-## Store failures
+### Store parser context
 
-Do not silently ignore failures.
+For Investing.com Financial / Analyst Summary, store supporting context such as
+analyst count, price target average, price target upside, and financial ratios
+when available.
 
-Failure records are useful for the Data Quality page.
+### Treat locked valuation fields carefully
 
-## Avoid daily duplicate noise
+Valuation fields may be present but locked. Locked fields should be surfaced as
+unavailable in data-quality output, not converted into signal scores.
+
+### Store failures
+
+Do not silently ignore failures. Failure records are useful for the Data Quality
+page.
+
+### Avoid daily duplicate noise
 
 Use:
 
@@ -839,55 +700,12 @@ Use:
 UNIQUE(date, ticker, source)
 ```
 
-## Keep the project honest
+### Disclaimers
 
-Add disclaimers:
+Use:
 
 ```text
 Signal League is not financial advice.
 It evaluates historical public signals.
 Past performance does not imply future performance.
-```
-
----
-
-# First Codex Task
-
-Start with this instruction:
-
-```text
-Create the initial repository structure for Signal League.
-
-Implement:
-1. SQLite schema initialization
-2. S&P 500 CSV loader
-3. Signal normalization utilities
-4. Basic test suite for normalization and DB initialization
-
-Do not implement web scraping yet.
-Focus on clean structure, database schema, and testable utilities.
-```
-
-Then next task:
-
-```text
-Implement price data collection using Yahoo Finance-compatible adjusted close data.
-
-Store prices for:
-- all tickers in config/sp500.csv
-- SPY
-- sector ETFs: XLK, XLF, XLV, XLE, XLI, XLY, XLP, XLU, XLB, XLRE, XLC
-
-Add retry handling and logging.
-```
-
-Then:
-
-```text
-Implement the first signal collector: Investing.com Technical Summary.
-
-Start with 10 tickers only.
-Return structured signal objects.
-Store successes and failures.
-Add collection run statistics.
 ```

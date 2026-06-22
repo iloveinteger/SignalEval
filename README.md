@@ -1,18 +1,35 @@
 # Signal League
 
-Signal League is a public investment signal performance tracker. It records
-public stock signals, stores them cleanly, and evaluates them against future
-returns.
+Signal League evaluates public investment signals against future returns.
 
-This repository currently contains the initial infrastructure slice:
+The MVP question is:
 
-- SQLite schema initialization
-- S&P 500 universe CSV loading
-- Signal normalization utilities
-- Focused pytest coverage
+```text
+Do Investing.com public signals outperform a random baseline?
+```
+
+The current MVP focuses on three signal sources:
+
+1. Investing.com Technical Analysis
+2. Investing.com Financial / Analyst Summary
+3. Random Baseline control group
+
+Yahoo Finance analyst consensus and Zacks Rank are future extensions, not MVP
+sources.
 
 Signal League is not financial advice. It evaluates historical public signals,
 and past performance does not imply future performance.
+
+## Current Parser Coverage
+
+The offline Investing.com parser currently works from saved HTML samples only.
+It does not make live HTTP requests.
+
+- Technical parser: extracts the selected overall technical signal and the daily
+  signal.
+- Financial / analyst parser: extracts analyst consensus, analyst count, price
+  target average, price target upside, and financial ratios.
+- Valuation fields may be locked or unavailable in saved pages.
 
 ## Setup
 
