@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-06-22T23:50:25+00:00",
-  "last_collection_time": "2026-06-22T23:50:25+00:00",
+  "generated_at": "2026-06-23T23:35:28+00:00",
+  "last_collection_time": "2026-06-23T23:35:28+00:00",
   "stocks_count": 10,
   "active_stocks_count": 10,
   "signals_collected": 30,
@@ -16,7 +16,7 @@
       "succeeded": 10,
       "failed": 0,
       "success_rate": 1.0,
-      "last_collection_time": "2026-06-22T23:50:25+00:00"
+      "last_collection_time": "2026-06-23T23:35:28+00:00"
     },
     {
       "source": "Mock Earnings Revision",
@@ -24,7 +24,7 @@
       "succeeded": 10,
       "failed": 0,
       "success_rate": 1.0,
-      "last_collection_time": "2026-06-22T23:50:25+00:00"
+      "last_collection_time": "2026-06-23T23:35:28+00:00"
     },
     {
       "source": "Mock Technical Summary",
@@ -32,7 +32,7 @@
       "succeeded": 10,
       "failed": 0,
       "success_rate": 1.0,
-      "last_collection_time": "2026-06-22T23:50:25+00:00"
+      "last_collection_time": "2026-06-23T23:35:28+00:00"
     }
   ],
   "missing_tickers": [],
